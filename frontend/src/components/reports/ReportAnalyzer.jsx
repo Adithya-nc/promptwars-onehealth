@@ -1,9 +1,10 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useDropzone } from 'react-dropzone'
 import {
   UploadCloud, FileText, Check, TrendingUp, TrendingDown,
-  Minus, Sparkles, Download, Save, RotateCcw, Copy, ShieldCheck
+  Minus, Sparkles, Download, Save, RotateCcw, Copy, ShieldCheck,
+  Calendar, Clock, CheckCircle2, Activity, Pill
 } from 'lucide-react'
 import { Button } from '../ui/Button'
 import { GlassCard } from '../ui/Card'
@@ -12,12 +13,13 @@ import { useRecordsStore } from '../../store/recordsStore'
 import { useUserStore } from '../../store/userStore'
 import { useToast } from '../ui/Toast'
 import { aiService } from '../../services/aiService'
-import { cn } from '../../utils/formatters'
+import { cn, formatDate } from '../../utils/formatters'
 
 const STEPS = ['Uploading Record', 'Extracting Telemetry', 'Comparing Bio-Markers', 'Compiling AI Summary']
 
 const MOCK_ANALYSIS = {
   report_type: 'Complete Blood Count (CBC)',
+  report_date: null,
   extracted_values: [
     { parameter: 'Haemoglobin', value: '11.2', unit: 'g/dL', reference_range: '12.0–16.0', status: 'low', plain_explanation: 'Your haemoglobin is slightly below normal — this may indicate mild anaemia.' },
     { parameter: 'WBC Count', value: '6,800', unit: 'cells/μL', reference_range: '4,500–11,000', status: 'normal', plain_explanation: 'Your white blood cell count is normal — no signs of active infection.' },
@@ -52,7 +54,14 @@ export default function ReportAnalyzer() {
   const [currentStep, setCurrentStep] = useState(0)
   const [result, setResult] = useState(null)
   const [copiedId, setCopiedId] = useState(false)
+  
+  // Date extraction states
+  const [effectiveDate, setEffectiveDate] = useState(() => new Date().toISOString().split('T')[0])
+  const [dateDetected, setDateDetected] = useState(false)
+  const [isEditingDate, setIsEditingDate] = useState(false)
+
   const addRecord = useRecordsStore(s => s.addRecord)
+  const records = useRecordsStore(s => s.records)
   const profile = useUserStore(s => s.profile)
   const toast = useToast()
   const patientId = profile?.patient_id || 'OH-P-AAAB2C3'
@@ -89,34 +98,104 @@ export default function ReportAnalyzer() {
     }
 
     const res = await aiPromise
-    if (res?.analysis) {
-      setResult(res.analysis)
+    const analysis = res?.analysis || MOCK_ANALYSIS
+    setResult(analysis)
+
+    // Check date in report
+    const detected = analysis.report_date
+    if (detected) {
+      setDateDetected(true)
+      // Normalize date if possible (YYYY-MM-DD or keep detected string)
+      setEffectiveDate(detected)
     } else {
-      setResult(MOCK_ANALYSIS)
+      setDateDetected(false)
+      setEffectiveDate(new Date().toISOString().split('T')[0])
     }
+    setIsEditingDate(false)
     setStep('results')
   }
 
   const handleSave = () => {
     addRecord({
       id: `rec-${Date.now()}`,
-      type: 'report',
-      date: new Date().toISOString().split('T')[0],
-      title: result?.report_type || files[0]?.name || 'Analyzed Report',
+      type: reportType || 'report',
+      date: effectiveDate,
+      title: result?.report_type || files[0]?.name || 'Analyzed Diagnostic Report',
       patient_id: patientId,
-      metadata: { doctor_name: 'oneHealth AI', hospital: '', patient_id: patientId, notes: '' },
+      metadata: { doctor_name: 'oneHealth AI', hospital: 'Clinical Pathology Lab', patient_id: patientId, notes: '' },
       ai_analysis: {
         summary: result?.overall_summary,
         extracted_values: result?.extracted_values,
+        abnormal_findings: result?.abnormal_findings,
         suggested_actions: result?.suggested_actions,
+        urgency: result?.urgency,
       },
     })
-    toast.success('Saved to Passport', `Report linked to Patient ID ${patientId}.`)
+    toast.success('Saved to Passport', `Report dated ${effectiveDate} linked to Patient ID ${patientId}.`)
   }
 
   const handleReset = () => {
-    setStep('upload'); setFiles([]); setResult(null); setProgress(0); setCurrentStep(0)
+    setStep('upload')
+    setFiles([])
+    setResult(null)
+    setProgress(0)
+    setCurrentStep(0)
+    setIsEditingDate(false)
   }
+
+  // Build AI Longitudinal History Timeline combining patient history and the new report
+  const timelineEntries = useMemo(() => {
+    if (!result) return []
+
+    const currentEntry = {
+      id: 'current-analyzed',
+      title: result.report_type || files[0]?.name || 'Current Uploaded Report',
+      date: effectiveDate,
+      type: reportType || 'report',
+      isCurrent: true,
+      summary: result.overall_summary,
+      abnormal_findings: result.abnormal_findings || [],
+      important_telemetry: (result.extracted_values || [])
+        .filter(v => v.status && v.status !== 'normal')
+        .map(v => ({ param: v.parameter, value: `${v.value} ${v.unit || ''}`, status: v.status })),
+      normal_telemetry: (result.extracted_values || [])
+        .filter(v => v.status === 'normal')
+        .slice(0, 3)
+        .map(v => ({ param: v.parameter, value: `${v.value} ${v.unit || ''}`, status: 'normal' })),
+      doctor: 'oneHealth AI Intelligence',
+      status: (result.abnormal_findings?.length > 0) ? 'attention' : 'optimal'
+    }
+
+    const historical = (records || []).map(r => {
+      const abFlags = r.ai_analysis?.abnormal_findings || []
+      const outOfRange = (r.ai_analysis?.extracted_values || [])
+        .filter(v => v.status && v.status !== 'normal')
+        .map(v => ({ param: v.parameter, value: `${v.value} ${v.unit || ''}`, status: v.status }))
+
+      const normalItems = (r.ai_analysis?.extracted_values || [])
+        .filter(v => v.status === 'normal')
+        .slice(0, 2)
+        .map(v => ({ param: v.parameter, value: `${v.value} ${v.unit || ''}`, status: 'normal' }))
+
+      return {
+        id: r.id,
+        title: r.title,
+        date: r.date,
+        type: r.type,
+        isCurrent: false,
+        summary: r.ai_analysis?.summary || r.metadata?.notes || 'Historical health record on file.',
+        abnormal_findings: abFlags,
+        important_telemetry: outOfRange,
+        normal_telemetry: normalItems,
+        doctor: r.metadata?.doctor_name || 'Consulting Doctor',
+        status: (abFlags.length > 0 || outOfRange.length > 0) ? 'attention' : 'optimal'
+      }
+    })
+
+    const combined = [currentEntry, ...historical]
+    combined.sort((a, b) => new Date(b.date || '1970-01-01') - new Date(a.date || '1970-01-01'))
+    return combined
+  }, [result, records, effectiveDate, files, reportType])
 
   return (
     <div className="page-container py-6 space-y-6 max-w-4xl mx-auto relative z-10">
@@ -312,6 +391,78 @@ export default function ReportAnalyzer() {
               </div>
             </GlassCard>
 
+            {/* Document Date Detection & Verification Card */}
+            {dateDetected ? (
+              <GlassCard className="p-4 bg-emerald-500/10 border-emerald-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                    <Calendar size={20} />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Report Date Detected</span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300 font-bold flex items-center gap-1">
+                        <CheckCircle2 size={11} /> Verified in Report
+                      </span>
+                    </div>
+                    <p className="text-sm font-bold font-mono text-[var(--color-text-primary)] mt-0.5">
+                      {effectiveDate}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 self-start sm:self-center">
+                  {isEditingDate ? (
+                    <div className="flex items-center gap-2">
+                      <input 
+                        type="date" 
+                        value={effectiveDate} 
+                        onChange={e => setEffectiveDate(e.target.value)}
+                        className="px-2.5 py-1 text-xs rounded-xl border border-emerald-300 dark:border-emerald-700 bg-white dark:bg-slate-800 text-[var(--color-text-primary)] font-mono outline-none"
+                      />
+                      <Button size="sm" variant="ghost" onClick={() => setIsEditingDate(false)}>Done</Button>
+                    </div>
+                  ) : (
+                    <button 
+                      onClick={() => setIsEditingDate(true)}
+                      className="text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:underline cursor-pointer"
+                    >
+                      Adjust Date
+                    </button>
+                  )}
+                </div>
+              </GlassCard>
+            ) : (
+              <GlassCard className="p-4 bg-blue-50/70 dark:bg-blue-900/15 border-blue-200/60 dark:border-blue-800/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                    <Calendar size={20} />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Report Date</span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300 font-bold flex items-center gap-1">
+                        <CheckCircle2 size={11} /> OK — Not specified in uploaded report
+                      </span>
+                    </div>
+                    <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
+                      Document did not contain an explicit date stamp. Recorded timestamp: <strong className="font-mono text-blue-600 dark:text-blue-400">{effectiveDate}</strong>
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 self-start sm:self-center">
+                  <span className="text-[11px] font-semibold text-slate-500 hidden sm:inline">Set Date:</span>
+                  <input 
+                    type="date" 
+                    value={effectiveDate} 
+                    onChange={e => setEffectiveDate(e.target.value)}
+                    className="px-2.5 py-1 text-xs rounded-xl border border-blue-200 dark:border-blue-700 bg-white dark:bg-slate-800 text-[var(--color-text-primary)] font-mono outline-none"
+                  />
+                </div>
+              </GlassCard>
+            )}
+
             {/* Summary GlassCard */}
             <GlassCard className="bg-gradient-to-r from-purple-500/10 to-blue-500/10 border-purple-500/20 p-6 relative">
               {/* Highlight overlay */}
@@ -334,6 +485,121 @@ export default function ReportAnalyzer() {
                   ))}
                 </div>
               )}
+            </GlassCard>
+
+            {/* AI Chronological Health Timeline & Important Data Highlights */}
+            <GlassCard className="p-6 border border-indigo-500/20 bg-gradient-to-br from-indigo-50/20 to-purple-50/20 dark:from-indigo-950/20 dark:to-purple-950/20">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6 pb-4 border-b border-[var(--color-border)]">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Sparkles size={18} className="text-purple-600 animate-pulse" />
+                    <h3 className="font-black text-lg text-[var(--color-text-primary)]">
+                      AI Health Timeline & Telemetry Highlights
+                    </h3>
+                  </div>
+                  <p className="text-xs text-[var(--color-text-muted)] mt-1">
+                    Chronological progression organized according to dates in your patient history, with important biomarker anomalies highlighted.
+                  </p>
+                </div>
+                <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full border border-purple-200 dark:border-purple-800/40 shrink-0 self-start sm:self-center">
+                  {timelineEntries.length} Timeline Milestones
+                </span>
+              </div>
+
+              {/* Timeline visual representation */}
+              <div className="relative pl-6 space-y-6 before:absolute before:left-2.5 before:top-3 before:bottom-3 before:w-0.5 before:bg-gradient-to-b before:from-purple-500 before:via-blue-500 before:to-slate-300 dark:before:to-slate-800">
+                {timelineEntries.map((item, idx) => (
+                  <div key={item.id || idx} className="relative group">
+                    {/* Timeline Node Icon */}
+                    <div className={cn(
+                      'absolute -left-[27px] top-1.5 w-6 h-6 rounded-full flex items-center justify-center text-xs shadow-md border-2 border-white dark:border-slate-900 transition-transform group-hover:scale-110',
+                      item.isCurrent 
+                        ? 'bg-purple-600 text-white ring-4 ring-purple-500/20' 
+                        : item.status === 'attention' 
+                        ? 'bg-amber-500 text-white' 
+                        : 'bg-emerald-500 text-white'
+                    )}>
+                      {item.isCurrent ? <Sparkles size={12} /> : item.type === 'report' ? <FileText size={12} /> : item.type === 'prescription' ? <Pill size={12} /> : <Activity size={12} />}
+                    </div>
+
+                    {/* Timeline Entry Card */}
+                    <div className={cn(
+                      'p-4 rounded-2xl border transition-all duration-200',
+                      item.isCurrent 
+                        ? 'bg-purple-500/10 border-purple-500/40 shadow-md shadow-purple-500/5 ring-1 ring-purple-500/20' 
+                        : 'bg-[var(--color-surface)] border-[var(--color-border)] hover:border-slate-300 dark:hover:border-slate-700'
+                    )}>
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h4 className="font-bold text-sm text-[var(--color-text-primary)]">
+                            {item.title}
+                          </h4>
+                          {item.isCurrent && (
+                            <span className="px-2 py-0.5 rounded-full bg-purple-600 text-white text-[9px] font-black uppercase tracking-wider animate-pulse">
+                              Newly Analyzed Upload
+                            </span>
+                          )}
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 uppercase">
+                            {item.type}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-slate-500 dark:text-slate-400">
+                          <Clock size={12} />
+                          <span>{formatDate(item.date)}</span>
+                        </div>
+                      </div>
+
+                      <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed mb-3">
+                        {item.summary}
+                      </p>
+
+                      {/* Important Data Telemetry Highlights */}
+                      <div className="space-y-1.5 pt-1">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+                          Important Data & Highlights
+                        </span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {/* Abnormal / Flagged Telemetry */}
+                          {item.important_telemetry?.map((t, ti) => (
+                            <span 
+                              key={`ab-${ti}`}
+                              className="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-lg bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-300 border border-red-200 dark:border-red-800/40 shadow-sm"
+                            >
+                              ⚠ <strong className="font-semibold">{t.param}:</strong> {t.value} ({t.status})
+                            </span>
+                          ))}
+
+                          {/* Abnormal findings strings if present */}
+                          {item.abnormal_findings?.map((af, afi) => (
+                            <span 
+                              key={`af-${afi}`}
+                              className="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-lg bg-amber-100 text-amber-900 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800/40"
+                            >
+                              ⚠ {af}
+                            </span>
+                          ))}
+
+                          {/* Normal / Stable Telemetry */}
+                          {item.normal_telemetry?.map((nt, nti) => (
+                            <span 
+                              key={`norm-${nti}`}
+                              className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-800/30"
+                            >
+                              ✓ {nt.param}: {nt.value}
+                            </span>
+                          ))}
+
+                          {(!item.important_telemetry?.length && !item.abnormal_findings?.length && !item.normal_telemetry?.length) && (
+                            <span className="text-[11px] text-slate-400 italic">
+                              Baseline record on file with stable physiological baselines.
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </GlassCard>
 
             {/* Extracted Values Table in GlassCard */}

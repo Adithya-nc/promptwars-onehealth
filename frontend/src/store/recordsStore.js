@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 import api from '../services/api'
 
 const MOCK_RECORDS = [
@@ -83,41 +84,97 @@ const MOCK_TRENDS = {
   ],
 }
 
-export const useRecordsStore = create((set, get) => ({
-  records: MOCK_RECORDS, // Start with mock data; replaced by backend data when available
-  trends: MOCK_TRENDS,
-  activeFilter: 'all',
-  searchQuery: '',
-  isLoading: false,
+export const useRecordsStore = create(
+  persist(
+    (set, get) => ({
+      records: MOCK_RECORDS,
+      trends: MOCK_TRENDS,
+      activeFilter: 'all',
+      searchQuery: '',
+      isLoading: false,
 
-  fetchRecords: async () => {
-    set({ isLoading: true })
-    try {
-      const response = await api.get('/patients/timeline')
-      if (response.data.entries && response.data.entries.length > 0) {
-        set({ records: response.data.entries, isLoading: false })
-      } else {
-        set({ records: MOCK_RECORDS, isLoading: false })
-      }
-    } catch (error) {
-      console.error('Failed to fetch records — using mock data:', error)
-      set({ records: MOCK_RECORDS, isLoading: false })
+      fetchRecords: async () => {
+        set({ isLoading: true })
+        try {
+          // Fetch both structured records and timeline from backend
+          const [recRes, tlRes] = await Promise.allSettled([
+            api.get('/patients/records'),
+            api.get('/patients/timeline')
+          ])
+
+          const serverRecords = recRes.status === 'fulfilled' && recRes.value.data?.records ? recRes.value.data.records : []
+          const timelineEntries = tlRes.status === 'fulfilled' && tlRes.value.data?.entries ? tlRes.value.data.entries : []
+          
+          const currentLocal = get().records || []
+          
+          // Combine all unique records (server records first, then timeline, then local)
+          const map = new Map()
+          serverRecords.forEach(r => map.set(r.id || `${r.title}-${r.date}`, r))
+          timelineEntries.forEach(t => {
+            const id = t.id || `${t.title}-${t.date}`
+            if (!map.has(id)) {
+              map.set(id, {
+                id: t.id,
+                type: (t.type || 'report').toLowerCase(),
+                title: t.title,
+                date: t.date?.split('T')[0] || t.date,
+                metadata: { doctor_name: t.doctor, hospital: t.hospital, notes: t.description },
+                ai_analysis: t.ai_analysis || null
+              })
+            }
+          })
+          currentLocal.forEach(r => {
+            const id = r.id || `${r.title}-${r.date}`
+            if (!map.has(id)) {
+              map.set(id, r)
+            }
+          })
+
+          const merged = Array.from(map.values())
+          set({
+            records: merged.length > 0 ? merged : MOCK_RECORDS,
+            isLoading: false
+          })
+        } catch (error) {
+          console.error('Failed to fetch records — using local/mock data:', error)
+          set((s) => ({ records: s.records?.length ? s.records : MOCK_RECORDS, isLoading: false }))
+        }
+      },
+
+      setFilter: (filter) => set({ activeFilter: filter }),
+      setSearch: (q) => set({ searchQuery: q }),
+      setLoading: (v) => set({ isLoading: v }),
+
+      addRecord: async (record) => {
+        // 1. Instantly store in local state
+        set((s) => {
+          const exists = s.records.some(r => r.id === record.id)
+          const nextRecords = exists ? s.records.map(r => r.id === record.id ? record : r) : [record, ...s.records]
+          return { records: nextRecords }
+        })
+
+        // 2. Persist to backend so it syncs to doctor portal and stays on relogin
+        try {
+          await api.post('/patients/records', record)
+        } catch (err) {
+          console.warn('Syncing record to backend /patients/records failed (kept in persistent local storage):', err)
+        }
+      },
+
+      removeRecord: (id) => set((s) => ({ records: s.records.filter(r => r.id !== id) })),
+
+      getFilteredRecords: () => {
+        const { records, activeFilter, searchQuery } = get()
+        return (records || []).filter(r => {
+          if (activeFilter !== 'all' && r.type !== activeFilter) return false
+          if (searchQuery && !r.title.toLowerCase().includes(searchQuery.toLowerCase())) return false
+          return true
+        })
+      },
+    }),
+    {
+      name: 'onehealth-records',
+      partialize: (s) => ({ records: s.records, trends: s.trends })
     }
-  },
-
-  setFilter: (filter) => set({ activeFilter: filter }),
-  setSearch: (q) => set({ searchQuery: q }),
-  setLoading: (v) => set({ isLoading: v }),
-
-  addRecord: (record) => set((s) => ({ records: [record, ...s.records] })),
-  removeRecord: (id) => set((s) => ({ records: s.records.filter(r => r.id !== id) })),
-
-  getFilteredRecords: () => {
-    const { records, activeFilter, searchQuery } = get()
-    return records.filter(r => {
-      if (activeFilter !== 'all' && r.type !== activeFilter) return false
-      if (searchQuery && !r.title.toLowerCase().includes(searchQuery.toLowerCase())) return false
-      return true
-    })
-  },
-}))
+  )
+)

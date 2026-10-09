@@ -473,10 +473,6 @@ export default function Dashboard() {
             </div>
             <p className="text-sm text-[var(--color-text-secondary)] font-semibold mt-1 flex flex-wrap items-center gap-2">
               <span>Your health has improved by <strong className="text-emerald-600">8%</strong> this month.</span>
-              <span className="h-4 w-px bg-[var(--color-border)] hidden sm:inline" />
-              <span className="inline-flex items-center gap-1 text-[11px] text-purple-600 dark:text-purple-400 bg-purple-100/50 dark:bg-purple-500/10 px-2 py-0.5 rounded-full font-bold border border-purple-200/30">
-                <Sparkles size={10} className="animate-pulse" /> Groq AI Engine Active
-              </span>
             </p>
           </div>
           
@@ -646,7 +642,7 @@ export default function Dashboard() {
                   </div>
                   <div>
                     <h3 className="text-base font-black text-[var(--color-text-primary)]">Doctor Prescriptions & Active Regimens</h3>
-                    <p className="text-xs text-[var(--color-text-muted)]">Medications prescribed by your attending physicians</p>
+                    <p className="text-xs text-[var(--color-text-muted)]">Medications prescribed by your attending doctors</p>
                   </div>
                 </div>
                 <Link to="/medications" className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1">

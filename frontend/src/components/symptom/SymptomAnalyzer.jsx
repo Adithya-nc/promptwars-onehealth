@@ -155,7 +155,7 @@ export default function SymptomAnalyzer() {
       date: new Date().toISOString().split('T')[0],
       title: `AI Symptom Triage: ${selectedSymptoms.slice(0, 3).join(', ')}`,
       metadata: {
-        doctor_name: 'OneHealth Groq Clinical AI',
+        doctor_name: 'oneHealth AI',
         hospital: 'Digital Triage Protocol',
         notes: `Duration: ${duration} · Severity: ${severityLevel} · Urgency: ${triageResult.urgency || triageResult.severity}`
       },
@@ -246,7 +246,7 @@ export default function SymptomAnalyzer() {
                 AI Symptom Analyzer & Triage
               </h1>
               <p className="text-xs sm:text-sm text-[var(--color-text-secondary)] font-medium mt-0.5">
-                Clinical symptom intelligence powered by Groq LPU Health Engine with integrated medical history.
+                Clinical symptom intelligence powered by Advanced Clinical AI Engine with integrated medical history.
               </p>
             </div>
           </div>
@@ -465,7 +465,7 @@ export default function SymptomAnalyzer() {
               <div className="w-8 h-8 rounded-full border-3 border-blue-600 border-t-transparent animate-spin flex-shrink-0" />
               <div>
                 <p className="text-xs font-black text-blue-900 dark:text-blue-200 uppercase tracking-wider">
-                  Groq Clinical Inference Active
+                  Clinical AI Inference Active
                 </p>
                 <p className="text-xs text-blue-700 dark:text-blue-300 font-medium">
                   {analysisStep === 1 && 'Parsing symptom cluster and chronology...'}
@@ -736,7 +736,7 @@ export default function SymptomAnalyzer() {
               </h3>
             </div>
             <p className="text-xs text-[var(--color-text-secondary)] font-medium">
-              Have questions regarding medication compatibility or symptoms? Ask Groq AI for targeted guidance.
+              Have questions regarding medication compatibility or symptoms? Ask oneHealth AI for targeted guidance.
             </p>
 
             {followUpList.map((item, idx) => (

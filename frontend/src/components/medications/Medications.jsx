@@ -262,7 +262,7 @@ export default function Medications() {
       {/* Low Supply Alert */}
       {lowSupply.length > 0 && (
         <Alert type="warning" title="Refill Notice">
-          {lowSupply.map(m => m.name).join(', ')} {lowSupply.length === 1 ? 'is' : 'are'} running low on supply (&le; 7 days left). Please request a refill from your physician.
+          {lowSupply.map(m => m.name).join(', ')} {lowSupply.length === 1 ? 'is' : 'are'} running low on supply (&le; 7 days left). Please request a refill from your doctor.
         </Alert>
       )}
 

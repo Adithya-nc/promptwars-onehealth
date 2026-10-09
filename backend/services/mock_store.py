@@ -318,18 +318,90 @@ def search_mock_doctors(query: str = '') -> list:
 
 
 def get_mock_patient_medications(patient_uid: str) -> list:
-    """Get medications for a patient."""
-    return MOCK_PATIENT_MEDICATIONS.get(patient_uid, [])
+    """Get medications for a patient, resolving by UID or OneHealth Patient ID."""
+    uid = MOCK_PATIENT_ID_TO_UID.get(patient_uid, patient_uid)
+    return MOCK_PATIENT_MEDICATIONS.get(uid, [])
 
 
 def get_mock_patient_timeline(patient_uid: str) -> list:
-    """Get timeline entries for a patient."""
-    return MOCK_PATIENT_TIMELINE.get(patient_uid, [])
+    """Get timeline entries for a patient, resolving by UID or OneHealth Patient ID."""
+    uid = MOCK_PATIENT_ID_TO_UID.get(patient_uid, patient_uid)
+    return MOCK_PATIENT_TIMELINE.get(uid, [])
 
 
 def get_mock_patient_records(patient_uid: str) -> list:
-    """Get medical records for a patient."""
-    return MOCK_PATIENT_RECORDS.get(patient_uid, [])
+    """Get medical records for a patient, resolving by UID or OneHealth Patient ID."""
+    uid = MOCK_PATIENT_ID_TO_UID.get(patient_uid, patient_uid)
+    return MOCK_PATIENT_RECORDS.get(uid, [])
+
+
+def add_mock_patient_record(patient_uid: str, data: dict) -> dict:
+    """Add an uploaded medical record or report to patient and update medical timeline."""
+    import time
+    uid = MOCK_PATIENT_ID_TO_UID.get(patient_uid, patient_uid)
+    rec_id = data.get('id') or f"rec-{int(time.time() * 1000)}"
+    user = get_mock_user(uid)
+    patient_id = (user.get('patient_id') if user else '') or data.get('patient_id', '')
+    
+    # Auto-detect date or fallback
+    record_date = data.get('date') or datetime.utcnow().isoformat().split('T')[0]
+    title = data.get('title') or 'Diagnostic Lab Report'
+    rec_type = data.get('type') or 'report'
+    
+    metadata = data.get('metadata') or {}
+    if not isinstance(metadata, dict):
+        metadata = {}
+    if 'doctor_name' not in metadata:
+        metadata['doctor_name'] = data.get('doctor_name', 'oneHealth AI')
+    if 'hospital' not in metadata:
+        metadata['hospital'] = data.get('hospital', 'Clinical Pathology Lab')
+    if 'notes' not in metadata:
+        metadata['notes'] = data.get('notes', '')
+        
+    ai_analysis = data.get('ai_analysis')
+    
+    record = {
+        'id': rec_id,
+        'type': rec_type,
+        'title': title,
+        'date': record_date,
+        'patient_id': patient_id,
+        'file_url': data.get('file_url'),
+        'metadata': metadata,
+        'ai_analysis': ai_analysis
+    }
+    
+    if uid not in MOCK_PATIENT_RECORDS:
+        MOCK_PATIENT_RECORDS[uid] = []
+    # Avoid duplicate ID if existing
+    MOCK_PATIENT_RECORDS[uid] = [r for r in MOCK_PATIENT_RECORDS[uid] if r.get('id') != rec_id]
+    MOCK_PATIENT_RECORDS[uid].insert(0, record)
+    
+    # Also update patient timeline so doctor and patient timeline views immediately show it
+    if uid not in MOCK_PATIENT_TIMELINE:
+        MOCK_PATIENT_TIMELINE[uid] = []
+        
+    tl_id = f"tl-{rec_id}"
+    MOCK_PATIENT_TIMELINE[uid] = [t for t in MOCK_PATIENT_TIMELINE[uid] if t.get('id') != tl_id]
+    
+    summary_desc = ''
+    if ai_analysis and isinstance(ai_analysis, dict):
+        summary_desc = ai_analysis.get('summary') or ai_analysis.get('overall_summary') or ''
+    if not summary_desc:
+        summary_desc = metadata.get('notes') or f"Diagnostic {rec_type} filed to OneHealth Passport."
+        
+    MOCK_PATIENT_TIMELINE[uid].insert(0, {
+        'id': tl_id,
+        'type': 'Report' if rec_type == 'report' else rec_type.capitalize(),
+        'title': title,
+        'date': record_date,
+        'doctor': metadata.get('doctor_name', 'oneHealth AI'),
+        'hospital': metadata.get('hospital', 'Diagnostic Center'),
+        'description': summary_desc,
+        'status': 'attention' if (ai_analysis and ai_analysis.get('abnormal_findings')) else 'normal'
+    })
+    
+    return record
 
 
 def register_mock_patient(data: dict) -> dict:

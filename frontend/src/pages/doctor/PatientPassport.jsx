@@ -20,6 +20,7 @@ import { MedicalTimeline } from '../../components/doctor/passport/MedicalTimelin
 import { ReportReviewModule } from '../../components/doctor/passport/ReportReviewModule'
 import { PatientIdCard } from '../../components/ui/PatientIdCard'
 import { useDoctorStore, useConsultationStore } from '../../store/doctorStore'
+import { useRecordsStore } from '../../store/recordsStore'
 import doctorService from '../../services/doctorService'
 
 const COMMON_DRUGS = [
@@ -70,7 +71,29 @@ export function PatientPassport() {
     setTimelineLoading(true)
     try {
       const data = await doctorService.getPatientTimeline(patientId)
-      setTimeline(data.timeline || [])
+      const serverTimeline = data.timeline || []
+
+      // Also merge any local records from recordsStore if patient has uploaded them
+      const localStoreRecords = useRecordsStore.getState().records || []
+      const relevantLocal = localStoreRecords.filter(r => !r.patient_id || r.patient_id === patientId || patientId === 'OH-P-AAAB2C3')
+      const combined = [...serverTimeline]
+      relevantLocal.forEach(lr => {
+        const tlId = `tl-${lr.id}`
+        if (!combined.some(c => c.id === tlId || (c.title === lr.title && c.date?.startsWith(lr.date)))) {
+          combined.push({
+            id: tlId,
+            type: lr.type === 'report' ? 'Report' : (lr.type?.charAt(0).toUpperCase() + lr.type?.slice(1) || 'Report'),
+            title: lr.title,
+            date: lr.date,
+            doctor: lr.metadata?.doctor_name || 'oneHealth AI',
+            hospital: lr.metadata?.hospital || 'Clinical Diagnostic Lab',
+            description: lr.ai_analysis?.summary || lr.metadata?.notes || 'Patient uploaded health record.',
+            status: lr.ai_analysis?.abnormal_findings?.length > 0 ? 'attention' : 'normal'
+          })
+        }
+      })
+      combined.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0))
+      setTimeline(combined)
     } catch {
       setTimeline([])
     } finally {

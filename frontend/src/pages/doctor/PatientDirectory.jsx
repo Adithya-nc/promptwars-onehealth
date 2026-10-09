@@ -238,6 +238,7 @@ export function PatientDirectory() {
   const navigate = useNavigate()
   const { patients, patientsLoading, patientsError, fetchPatients } = useDoctorStore()
   const [searchTerm, setSearchTerm] = useState('')
+  const [showAll, setShowAll] = useState(false)
 
   const loadPatients = useCallback(() => {
     fetchPatients()
@@ -274,9 +275,9 @@ export function PatientDirectory() {
       <GlassCard className="p-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="flex-1">
-            <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-1.5">Patient Directory</h2>
+            <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-1.5">Patient Search & Directory</h2>
             <p className="text-slate-500 dark:text-slate-400 text-xs font-semibold">
-              Patients who have granted you access to their health passport.
+              Search by Patient ID or Name to access authorized Health Passports.
             </p>
           </div>
 
@@ -285,7 +286,7 @@ export function PatientDirectory() {
               <Search className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 type="text"
-                placeholder="Filter by name or patient ID..."
+                placeholder="Search patient by name or ID (e.g. OH-P-AAAB2C3)..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 aria-label="Filter patients"
@@ -342,50 +343,84 @@ export function PatientDirectory() {
         </div>
       )}
 
-      {/* Patient Grid */}
+      {/* Patient Grid or Initial Search Prompt */}
       {!patientsLoading && (
         <>
-          <motion.div
-            variants={container}
-            initial="hidden"
-            animate="show"
-            className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
-          >
-            <AnimatePresence mode="popLayout">
-              {filteredPatients.map((patient) => (
-                <PatientCard
-                  key={patient.patient_id || patient.uid}
-                  patient={patient}
-                  cardVariant={cardVariant}
-                  onClick={() => navigate(`/doctor/patients/${patient.patient_id}`)}
-                />
-              ))}
-            </AnimatePresence>
-          </motion.div>
-
-          {/* Empty State */}
-          {filteredPatients.length === 0 && !patientsError && (
-            <div className="py-20 text-center relative z-10">
-              <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-inner">
-                <Users className="w-8 h-8 text-slate-400" />
+          {!searchTerm.trim() && !showAll ? (
+            <div className="py-14 text-center relative z-10 bg-[var(--color-surface)]/30 border border-[var(--color-border)]/50 rounded-3xl p-8 backdrop-blur-sm">
+              <div className="w-16 h-16 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/50 rounded-2xl flex items-center justify-center mx-auto mb-4 text-blue-600 shadow-md">
+                <UserSearch className="w-8 h-8" />
               </div>
-              {patients.length === 0 ? (
-                <>
-                  <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">No Patients Yet</h3>
-                  <p className="text-slate-500 dark:text-slate-400 max-w-sm mx-auto text-sm">
-                    Patients will appear here once they grant you access to their health passport.
-                    Share your profile so patients can find and authorize you.
-                  </p>
-                </>
-              ) : (
-                <>
-                  <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">No matches</h3>
-                  <p className="text-slate-500 dark:text-slate-400 max-w-sm mx-auto text-sm">
-                    No patients match your filter. Try a different search term.
-                  </p>
-                </>
-              )}
+              <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">Patient Search Command</h3>
+              <p className="text-slate-500 dark:text-slate-400 max-w-md mx-auto text-sm leading-relaxed mb-6 font-medium">
+                Enter a OneHealth Patient ID or patient name in the search bar above to look up records, or view all consented patients.
+              </p>
+              <div className="flex items-center justify-center gap-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowAll(true)}
+                  className="text-xs font-bold"
+                >
+                  <Users className="w-4 h-4 mr-1.5" /> View Consented Patient Directory ({patients.length})
+                </Button>
+              </div>
             </div>
+          ) : (
+            <>
+              <div className="flex items-center justify-between px-1">
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                  {searchTerm.trim() ? `Search Results for "${searchTerm}" (${filteredPatients.length})` : `All Consented Patients (${patients.length})`}
+                </p>
+                {showAll && !searchTerm.trim() && (
+                  <button
+                    onClick={() => setShowAll(false)}
+                    className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-bold"
+                  >
+                    Hide Directory
+                  </button>
+                )}
+              </div>
+
+              <motion.div
+                variants={container}
+                initial="hidden"
+                animate="show"
+                className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
+              >
+                <AnimatePresence mode="popLayout">
+                  {filteredPatients.map((patient) => (
+                    <PatientCard
+                      key={patient.patient_id || patient.uid}
+                      patient={patient}
+                      cardVariant={cardVariant}
+                      onClick={() => navigate(`/doctor/patients/${patient.patient_id}`)}
+                    />
+                  ))}
+                </AnimatePresence>
+              </motion.div>
+
+              {/* Empty Search State */}
+              {filteredPatients.length === 0 && !patientsError && (
+                <div className="py-20 text-center relative z-10">
+                  <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-inner">
+                    <Users className="w-8 h-8 text-slate-400" />
+                  </div>
+                  <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">No Matching Patients</h3>
+                  <p className="text-slate-500 dark:text-slate-400 max-w-sm mx-auto text-sm">
+                    No authorized patients found matching "{searchTerm}". Please check the ID or name.
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-4"
+                    onClick={() => { setSearchTerm(''); setShowAll(false); }}
+                  >
+                    Reset Search
+                  </Button>
+                </div>
+              )}
+            </>
           )}
         </>
       )}

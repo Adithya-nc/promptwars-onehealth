@@ -47,6 +47,15 @@ const doctorService = {
   },
 
   /**
+   * Get patient medical records & reports (requires active consent).
+   * @param {string} patientId - OneHealth Patient ID
+   */
+  async getPatientRecords(patientId) {
+    const res = await api.get(`/doctor/patients/${patientId}/records`)
+    return res.data
+  },
+
+  /**
    * Get patient medications (requires active consent).
    * @param {string} patientId - OneHealth Patient ID
    */
@@ -111,4 +120,5 @@ const doctorService = {
   },
 }
 
+export { doctorService }
 export default doctorService

@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useDropzone } from 'react-dropzone'
 import {
@@ -63,12 +63,16 @@ function UploadModal({ isOpen, onClose }) {
     // Simulate upload
     await new Promise(r => setTimeout(r, 1500))
 
+    const currentProfile = useUserStore.getState().profile
+    const patientId = currentProfile?.patient_id || 'OH-P-AAAB2C3'
+
     const newRecord = {
       id: `rec-${Date.now()}`,
       type: form.type,
       date: form.date || new Date().toISOString().split('T')[0],
       title: files[0]?.name || `${getRecordTypeLabel(form.type)} Record`,
-      metadata: { doctor_name: form.doctor, hospital: form.hospital, notes: form.notes },
+      patient_id: patientId,
+      metadata: { doctor_name: form.doctor, hospital: form.hospital, notes: form.notes, patient_id: patientId },
       ai_analysis: null,
     }
     addRecord(newRecord)
@@ -456,11 +460,16 @@ export default function Passport() {
   const getFilteredRecords = useRecordsStore(s => s.getFilteredRecords)
   const setFilter = useRecordsStore(s => s.setFilter)
   const setSearch = useRecordsStore(s => s.setSearch)
+  const fetchRecords = useRecordsStore(s => s.fetchRecords)
   const profile = useUserStore(s => s.profile)
   const healthMetrics = useUserStore(s => s.healthMetrics)
 
   const [uploadOpen, setUploadOpen] = useState(false)
   const [selectedRecord, setSelectedRecord] = useState(null)
+
+  useEffect(() => {
+    fetchRecords()
+  }, [fetchRecords])
 
   const filtered = getFilteredRecords()
 

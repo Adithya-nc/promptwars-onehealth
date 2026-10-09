@@ -22,7 +22,7 @@ const clinicalPillars = [
   {
     icon: AlertTriangle,
     title: 'Emergency Triage Readiness',
-    description: 'Instant zero-login emergency card providing triage nurses, EMTs, and ER physicians with immediate access to life-threatening allergies and blood type.'
+    description: 'Instant zero-login emergency card providing triage nurses, EMTs, and ER doctors with immediate access to life-threatening allergies and blood type.'
   },
   {
     icon: Pill,
@@ -43,7 +43,7 @@ const clinicalFeatures = [
     category: 'Patient Portal',
     title: 'Lifetime Digital Health Passport',
     description: 'A permanent, patient-owned health vault bridging fragmented hospital systems, outpatient clinics, and private medical practices.',
-    points: ['Consolidated chronological consultation timeline', 'Documented chronic condition history', 'Downloadable physician health summary']
+    points: ['Consolidated chronological consultation timeline', 'Documented chronic condition history', 'Downloadable doctor health summary']
   },
   {
     icon: AlertTriangle,
@@ -63,8 +63,8 @@ const clinicalFeatures = [
     icon: Pill,
     category: 'Pharmacy & Care',
     title: 'Prescription & Regimen Tracking',
-    description: 'Keep all active prescriptions and physician instructions synchronized between primary doctors and consulting specialists.',
-    points: ['Real-time active medication roster', 'Physician-verified prescription logs', 'Documented allergy-drug conflict warnings']
+    description: 'Keep all active prescriptions and doctor instructions synchronized between primary doctors and consulting specialists.',
+    points: ['Real-time active medication roster', 'Doctor-verified prescription logs', 'Documented allergy-drug conflict warnings']
   },
   {
     icon: Lock,
@@ -75,7 +75,7 @@ const clinicalFeatures = [
   },
   {
     icon: Stethoscope,
-    category: 'Physician Network',
+    category: 'Doctor Network',
     title: 'Clinical Consultation Station',
     description: 'A dedicated workspace for licensed doctors to review authorized patient charts, inspect lab trends, and dispense digital prescriptions.',
     points: ['Fast OneHealth Patient ID lookup', 'Pre-consultation clinical history review', 'Direct digital prescription delivery to passport']
@@ -102,7 +102,7 @@ const clinicalWorkflow = [
   {
     step: '04',
     title: 'Share at Consultations',
-    desc: 'Provide your consulting physician with a secure digital consent token for immediate chart review.'
+    desc: 'Provide your consulting doctor with a secure digital consent token for immediate chart review.'
   }
 ]
 
@@ -234,7 +234,7 @@ export default function Landing() {
                     <Stethoscope size={24} />
                   </div>
                   <div>
-                    <span className="block font-bold text-slate-900 dark:text-white text-base">Physician</span>
+                    <span className="block font-bold text-slate-900 dark:text-white text-base">Doctor</span>
                     <span className="text-xs text-slate-500 dark:text-slate-400">Clinical Station Portal</span>
                   </div>
                 </motion.button>
@@ -274,7 +274,7 @@ export default function Landing() {
             <a href="#passport" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Health Passport</a>
             <a href="#emergency" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Emergency Triage</a>
             <a href="#features" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Clinical Features</a>
-            <a href="#physicians" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">For Physicians</a>
+            <a href="#doctors" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">For Doctors</a>
             <a href="#trust" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Data Privacy</a>
           </nav>
 
@@ -323,7 +323,7 @@ export default function Landing() {
               <a href="#passport" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-blue-600">Health Passport</a>
               <a href="#emergency" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-blue-600">Emergency Triage</a>
               <a href="#features" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-blue-600">Clinical Features</a>
-              <a href="#physicians" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-blue-600">For Physicians</a>
+              <a href="#doctors" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-blue-600">For Doctors</a>
               <a href="#trust" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-blue-600">Data Privacy</a>
               <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex gap-2">
                 <Button variant="outline" size="sm" className="w-1/2" onClick={() => { setMobileMenuOpen(false); setAuthIntent('login'); }}>Sign In</Button>
@@ -651,7 +651,7 @@ export default function Landing() {
                     </div>
 
                     <div className="bg-slate-100 dark:bg-slate-800 px-4 py-2 text-center text-[11px] text-slate-500 border-t border-slate-200 dark:border-slate-700">
-                      Licensed physician session audit ledger active: <span className="font-mono">CLIN-AUTH-9914</span>
+                      Licensed doctor session audit ledger active: <span className="font-mono">CLIN-AUTH-9914</span>
                     </div>
                   </motion.div>
                 )}
@@ -902,13 +902,13 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* --- FOR PHYSICIANS & CLINICS (ONEHEALTH PRO) --- */}
-      <section id="physicians" className="relative z-10 py-20 lg:py-28 px-4 sm:px-6 lg:px-8 border-b border-slate-200/80 dark:border-slate-800/80 bg-[#09111E] text-white">
+      {/* --- FOR DOCTORS & CLINICS (ONEHEALTH PRO) --- */}
+      <section id="doctors" className="relative z-10 py-20 lg:py-28 px-4 sm:px-6 lg:px-8 border-b border-slate-200/80 dark:border-slate-800/80 bg-[#09111E] text-white">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-12 gap-12 items-center">
           <div className="lg:col-span-6">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-teal-950 border border-teal-700/80 text-xs font-bold text-teal-300 mb-6">
               <Stethoscope size={14} />
-              <span>OneHealth Pro • Clinical Physician Network</span>
+              <span>OneHealth Pro • Clinical Doctor Network</span>
             </div>
 
             <h2 className="text-3xl sm:text-5xl font-extrabold mb-6 tracking-tight leading-tight">
@@ -942,7 +942,7 @@ export default function Landing() {
                   className="w-full sm:w-auto bg-teal-500 hover:bg-teal-600 text-slate-950 font-bold rounded-xl px-7"
                   onClick={() => { setAuthIntent('register'); handleRoleSelect('doctor'); }}
                 >
-                  Join as a Physician
+                  Join as a Doctor
                 </Button>
               </motion.div>
               <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
@@ -952,7 +952,7 @@ export default function Landing() {
                   className="w-full sm:w-auto border-slate-700 bg-slate-800/80 text-white rounded-xl px-7"
                   onClick={() => { setAuthIntent('login'); handleRoleSelect('doctor'); }}
                 >
-                  Physician Portal Login
+                  Doctor Portal Login
                 </Button>
               </motion.div>
             </div>
@@ -991,7 +991,7 @@ export default function Landing() {
               </div>
 
               <div className="p-3.5 rounded-xl bg-teal-950/40 border border-teal-800/60 text-xs text-teal-200">
-                Patient records inspected under authorized physician token. All accesses are signed to the patient audit log.
+                Patient records inspected under authorized doctor token. All accesses are signed to the patient audit log.
               </div>
             </div>
           </div>
@@ -1127,20 +1127,20 @@ export default function Landing() {
             </ul>
           </div>
 
-          {/* Column 3: Physician Network */}
+          {/* Column 3: Doctor Network */}
           <div>
             <h3 className="font-bold text-xs uppercase tracking-wider text-slate-900 dark:text-white mb-3">
-              Physician Network
+              Doctor Network
             </h3>
             <ul className="space-y-2.5 text-xs sm:text-sm">
-              <li><a href="#physicians" className="hover:text-blue-600 transition-colors">OneHealth Pro Station</a></li>
+              <li><a href="#doctors" className="hover:text-blue-600 transition-colors">OneHealth Pro Station</a></li>
               <li>
                 <button
                   type="button"
                   onClick={() => { setAuthIntent('login'); handleRoleSelect('doctor'); }}
                   className="hover:text-blue-600 text-left transition-colors cursor-pointer"
                 >
-                  Physician Portal Sign In
+                  Doctor Portal Sign In
                 </button>
               </li>
               <li>

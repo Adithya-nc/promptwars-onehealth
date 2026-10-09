@@ -13,6 +13,7 @@ import {
 import { Button, GlassCard } from '../../components/ui'
 import { ClinicalTooltip } from '../../components/ui/ClinicalChart'
 import { cn } from '../../utils/formatters'
+import { useAuthStore } from '../../store/authStore'
 
 // Mock Data for Doctor Analytics & Trends
 const DIAGNOSIS_TRENDS = [
@@ -76,6 +77,11 @@ function CountUp({ value, suffix = '', duration = 1000 }) {
 
 export function Dashboard() {
   const navigate = useNavigate()
+  const user = useAuthStore(s => s.user)
+  const rawName = user?.name || 'Practitioner'
+  const doctorName = rawName.toLowerCase().startsWith('dr') ? rawName : `Dr. ${rawName}`
+  const initials = rawName.replace(/^Dr\.?\s*/i, '').trim().slice(0, 2).toUpperCase() || 'DR'
+  const specialisation = user?.doctor_profile?.specialisation || user?.specialization || 'Clinical Command Center'
   const [searchQuery, setSearchQuery] = useState('')
   const [queueTab, setQueueTab] = useState('today') // today | upcoming | priority
   const [alertFilter, setAlertFilter] = useState('all') // all | abnormal_reports | missed_medications | urgent_followup
@@ -127,14 +133,14 @@ export function Dashboard() {
       >
         <div className="flex items-center gap-4">
           <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-2xl font-black text-white shadow-xl shadow-blue-500/15">
-            DR
+            {initials}
           </div>
           <div>
             <h1 className="text-3xl font-black text-[var(--color-text-primary)] tracking-tight">
-              Welcome back, Dr. Sarah Smith 👋
+              Welcome back, {doctorName} 👋
             </h1>
             <p className="text-sm text-[var(--color-text-secondary)] font-semibold mt-1 flex flex-wrap items-center gap-2">
-              <span>Cardiology Command Center</span>
+              <span>{specialisation}</span>
               <span className="h-4 w-px bg-[var(--color-border)]" />
               <span className="text-emerald-600 font-bold">12 Patients Managed Today</span>
             </p>

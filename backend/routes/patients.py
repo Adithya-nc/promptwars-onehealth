@@ -7,6 +7,7 @@ from flask import Blueprint, jsonify, request, g, current_app
 from middleware.auth import require_auth
 from services.mock_store import (
     get_mock_user, get_mock_patient_medications, get_mock_patient_timeline,
+    get_mock_patient_records, add_mock_patient_record,
     register_mock_patient, find_mock_user_by_email_or_name, MOCK_USERS, MOCK_PATIENT_ID_TO_UID
 )
 from datetime import datetime
@@ -273,3 +274,55 @@ def update_profile():
         return jsonify({'success': True, 'message': 'Profile updated successfully.'})
     except Exception as e:
         return _error('SERVER_ERROR', str(e), 500)
+
+
+# ── GET & POST /api/patients/records ──────────────────────────────────────────
+@bp.route('/records', methods=['GET', 'POST'])
+@require_auth(role='patient')
+def patient_records():
+    """Retrieve or upload persistent medical records for the authenticated patient."""
+    patient_uid = g.user_id
+
+    if request.method == 'POST':
+        data = request.get_json(silent=True) or {}
+        if _is_mock():
+            record = add_mock_patient_record(patient_uid, data)
+            return jsonify({'success': True, 'record': record, 'message': 'Record uploaded and synced to passport.'}), 201
+
+        # Production Firestore
+        try:
+            from firebase_admin import firestore as admin_firestore
+            db = admin_firestore.client()
+            rec_id = data.get('id') or f"rec_{int(datetime.utcnow().timestamp()*1000)}"
+            data['id'] = rec_id
+            data['created_at'] = datetime.utcnow().isoformat()
+            db.collection('users').document(patient_uid).collection('records').document(rec_id).set(data)
+            # Add to timeline as well
+            db.collection('users').document(patient_uid).collection('timeline').document(f"tl_{rec_id}").set({
+                'id': f"tl_{rec_id}",
+                'type': data.get('type', 'report').capitalize(),
+                'title': data.get('title', 'Medical Record'),
+                'date': data.get('date', datetime.utcnow().isoformat().split('T')[0]),
+                'doctor': data.get('metadata', {}).get('doctor_name', 'oneHealth AI'),
+                'hospital': data.get('metadata', {}).get('hospital', 'Diagnostic Center'),
+                'description': data.get('ai_analysis', {}).get('summary', 'Uploaded medical document'),
+                'status': 'normal'
+            })
+            return jsonify({'success': True, 'record': data}), 201
+        except Exception as e:
+            return _error('SERVER_ERROR', str(e), 500)
+
+    # GET records
+    if _is_mock():
+        records = get_mock_patient_records(patient_uid)
+        return jsonify({'success': True, 'records': records})
+
+    try:
+        from firebase_admin import firestore as admin_firestore
+        db = admin_firestore.client()
+        docs = db.collection('users').document(patient_uid).collection('records').order_by('date', direction='DESCENDING').get()
+        records = [d.to_dict() | {'id': d.id} for d in docs]
+        return jsonify({'success': True, 'records': records})
+    except Exception as e:
+        return _error('SERVER_ERROR', str(e), 500)
+

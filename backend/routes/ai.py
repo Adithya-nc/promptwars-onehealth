@@ -370,7 +370,7 @@ Return valid JSON matching this schema:
     groq_resp, model_used = call_groq_json(sys_prompt, usr_prompt)
 
     if groq_resp and 'possible_conditions' in groq_resp:
-        groq_resp["engine"] = f"Groq AI ({model_used})"
+        groq_resp["engine"] = "OneHealth Clinical Intelligence"
         return jsonify(groq_resp)
 
     # 3. Deterministic Clinical Fallback
@@ -501,11 +501,12 @@ def analyze_report():
     if text_content:
         sys_prompt = """You are an expert AI clinical diagnostic assistant for the OneHealth Digital Passport.
 Analyze the patient lab report text.
-Extract all individual biomarkers and parameters, compare them against standard medical reference ranges, evaluate status ('normal', 'low', 'high', 'critical'), highlight abnormal findings, provide clear patient-friendly explanations, and suggest actionable next steps.
+Extract all individual biomarkers and parameters, compare them against standard medical reference ranges, evaluate status ('normal', 'low', 'high', 'critical'), highlight abnormal findings, provide clear patient-friendly explanations, extract report/test date if present, and suggest actionable next steps.
 
 Return ONLY a valid JSON object matching this schema:
 {
   "report_type": "string (e.g. Complete Blood Count / Comprehensive Metabolic Panel / Lipid Profile / etc.)",
+  "report_date": "string in YYYY-MM-DD or DD/MM/YYYY format if a specific test/collection/report date is mentioned in the text, otherwise null",
   "extracted_values": [
     {
       "parameter": "string",
@@ -534,9 +535,26 @@ Return ONLY a valid JSON object matching this schema:
             and 'extracted_values' in groq_resp
             and groq_resp.get('extracted_values')
         ):
+            # Check if Groq missed date, try regex extraction
+            if not groq_resp.get('report_date'):
+                date_match = re.search(
+                    r'(?:date|collected|sampled|reported|tested|specimen date|test date)[\s:_-]*([0-9]{1,2}[-/.][0-9]{1,2}[-/.][0-9]{2,4}|[0-9]{4}[-/.][0-9]{1,2}[-/.][0-9]{1,2}|[A-Za-z]{3,9}\s+[0-9]{1,2},?\s+[0-9]{4})',
+                    text_content,
+                    re.IGNORECASE
+                )
+                if not date_match:
+                    date_match = re.search(
+                        r'\b((?:19|20)\d{2}[-/.](?:0[1-9]|1[0-2])[-/.](?:0[1-9]|[12][0-9]|3[01]))\b',
+                        text_content
+                    )
+                if date_match:
+                    groq_resp['report_date'] = date_match.group(1).strip()
+                else:
+                    groq_resp['report_date'] = None
+
             return jsonify({
                 "success": True,
-                "engine": f"Groq AI ({model_used})",
+                "engine": "OneHealth Clinical Intelligence",
                 "analysis": groq_resp
             })
 
@@ -544,6 +562,24 @@ Return ONLY a valid JSON object matching this schema:
     extracted_values = []
     abnormal_findings = []
     text_lower = (text_content + " " + file_name).lower()
+
+    # Extract date if present in document
+    date_match = re.search(
+        r'(?:date|collected|sampled|reported|tested|specimen date|test date)[\s:_-]*([0-9]{1,2}[-/.][0-9]{1,2}[-/.][0-9]{2,4}|[0-9]{4}[-/.][0-9]{1,2}[-/.][0-9]{1,2}|[A-Za-z]{3,9}\s+[0-9]{1,2},?\s+[0-9]{4})',
+        text_content,
+        re.IGNORECASE
+    )
+    if not date_match:
+        date_match = re.search(
+            r'\b((?:19|20)\d{2}[-/.](?:0[1-9]|1[0-2])[-/.](?:0[1-9]|[12][0-9]|3[01]))\b',
+            text_content
+        )
+    if not date_match:
+        date_match = re.search(
+            r'\b((?:0[1-9]|[12][0-9]|3[01])[-/.](?:0[1-9]|1[0-2])[-/.](?:19|20)\d\d)\b',
+            text_content
+        )
+    detected_date = date_match.group(1).strip() if date_match else None
 
     for key, meta in BIOMARKER_CATALOG.items():
         if key in text_lower:
@@ -707,7 +743,7 @@ Return ONLY a valid JSON object matching this schema:
         summary = (
             f"Your {detected_type} indicates critical parameter values "
             f"requiring prompt medical consultation. Please share this "
-            f"analysis with your physician immediately."
+            f"analysis with your doctor immediately."
         )
     elif has_abnormal:
         summary = (
@@ -727,7 +763,7 @@ Return ONLY a valid JSON object matching this schema:
     actions = [
         "Maintain adequate hydration with 2.5–3 liters of water daily.",
         "Include diverse micronutrient-dense leafy greens and balanced proteins in your diet.",
-        "Share these test results with your primary physician during your next consultation."
+        "Share these test results with your primary doctor during your next consultation."
     ]
 
     if any(
@@ -755,6 +791,7 @@ Return ONLY a valid JSON object matching this schema:
 
     analysis_result = {
         'report_type': detected_type,
+        'report_date': detected_date,
         'extracted_values': extracted_values,
         'overall_summary': summary,
         'abnormal_findings': abnormal_findings,

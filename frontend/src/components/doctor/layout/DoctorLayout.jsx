@@ -114,13 +114,17 @@ export function DoctorLayout() {
             <div className="p-4 border-t border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-3 px-2 mb-4">
                 <img 
-                  src={user?.avatar || "https://ui-avatars.com/api/?name=Dr+Smith&background=0D8ABC&color=fff"} 
+                  src={user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'Doctor')}&background=0D8ABC&color=fff`} 
                   alt="Doctor Avatar" 
                   className="w-10 h-10 rounded-full border-2 border-white dark:border-slate-800 shadow-sm"
                 />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">Dr. {user?.name || "Sarah Smith"}</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 truncate">Cardiologist</p>
+                  <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">
+                    {user?.name ? (user.name.toLowerCase().startsWith('dr') ? user.name : `Dr. ${user.name}`) : "Dr. Practitioner"}
+                  </p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                    {user?.doctor_profile?.specialisation || user?.specialization || "Clinical Practice"}
+                  </p>
                 </div>
               </div>
               <button 

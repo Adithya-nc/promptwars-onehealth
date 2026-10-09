@@ -421,6 +421,53 @@ def get_patient_timeline(patient_id):
         return _error('SERVER_ERROR', str(e), 500)
 
 
+# ── GET /api/doctor/patients/<patient_id>/records ─────────────────────────────
+@bp.route('/patients/<patient_id>/records', methods=['GET'])
+@require_auth(role='doctor')
+def get_patient_records(patient_id):
+    """Get all uploaded diagnostic reports and records for a patient. Requires active consent."""
+    try:
+        doctor_uid = _get_doctor_uid_from_g()
+    except ConsentError as e:
+        return _error(e.code, e.message, e.status)
+
+    if _is_mock():
+        patient = get_mock_patient_by_id(patient_id)
+        if not patient:
+            return _error('NOT_FOUND', 'Patient not found.', 404)
+        patient_uid = patient.get('uid')
+        try:
+            ConsentService.mock_verify_access(doctor_uid, patient_uid)
+        except ConsentError:
+            ConsentService.mock_grant_consent(doctor_uid, patient_uid, patient.get('patient_id', ''))
+        records = get_mock_patient_records(patient_uid)
+        return jsonify({'success': True, 'records': records})
+
+    # Production
+    try:
+        from firebase_admin import firestore as admin_firestore
+        db = admin_firestore.client()
+        patients = db.collection('users') \
+            .where('patient_id', '==', patient_id) \
+            .where('role', '==', 'patient') \
+            .limit(1).get()
+        if not patients:
+            return _error('NOT_FOUND', 'Patient not found.', 404)
+        patient_uid = patients[0].id
+        try:
+            ConsentService.firestore_verify_access(db, doctor_uid, patient_uid)
+        except ConsentError as e:
+            return _error(e.code, e.message, e.status)
+        records_docs = db.collection('users').document(patient_uid) \
+            .collection('records').order_by('date', direction='DESCENDING').get()
+        records = [d.to_dict() | {'id': d.id} for d in records_docs]
+        return jsonify({'success': True, 'records': records})
+    except ConsentError as e:
+        return _error(e.code, e.message, e.status)
+    except Exception as e:
+        return _error('SERVER_ERROR', str(e), 500)
+
+
 # ── GET /api/doctor/patients/<patient_id>/medications ─────────────────────────
 @bp.route('/patients/<patient_id>/medications', methods=['GET'])
 @require_auth(role='doctor')

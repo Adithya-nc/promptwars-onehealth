@@ -1,7 +1,5 @@
-import React from 'react'
 import { motion } from 'framer-motion'
 import { 
-  User, 
   Mail, 
   Phone, 
   MapPin, 
@@ -10,11 +8,20 @@ import {
   ShieldCheck,
   Edit2
 } from 'lucide-react'
-import { Card, GlassCard, Button, Input } from '../../components/ui'
+import { GlassCard, Button, Input } from '../../components/ui'
 import { useAuthStore } from '../../store/authStore'
 
 export function Profile() {
   const { user } = useAuthStore()
+  const rawName = user?.name || 'Practitioner'
+  const doctorName = rawName.toLowerCase().startsWith('dr') ? rawName : `Dr. ${rawName}`
+  const docProfile = user?.doctor_profile || {}
+  const specialisation = docProfile.specialisation || user?.specialization || 'General Medicine'
+  const hospital = docProfile.hospital || user?.hospital || 'City General Hospital'
+  const email = user?.email || 'doctor@hospital.com'
+  const phone = user?.phone || '+91 98765 43210'
+  const experience = docProfile.experience || user?.experience || '5+ Years'
+  const bio = docProfile.bio || user?.bio || `${doctorName} is a licensed medical specialist dedicated to evidence-based clinical care and patient safety.`
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -54,7 +61,7 @@ export function Profile() {
                 className="relative group cursor-pointer"
               >
                 <img 
-                  src={user?.avatar || "https://ui-avatars.com/api/?name=Sarah+Smith&background=fff&color=0D8ABC"} 
+                  src={user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(doctorName)}&background=0D8ABC&color=fff`} 
                   alt="Profile" 
                   className="w-32 h-32 rounded-full border-4 border-white dark:border-slate-900 shadow-xl"
                 />
@@ -64,8 +71,8 @@ export function Profile() {
               </motion.div>
               
               <div className="flex-1 mb-2">
-                <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Dr. Sarah Smith</h1>
-                <p className="text-blue-600 dark:text-blue-400 font-medium text-lg">Senior Cardiologist</p>
+                <h1 className="text-3xl font-bold text-slate-900 dark:text-white">{doctorName}</h1>
+                <p className="text-blue-600 dark:text-blue-400 font-medium text-lg">{specialisation}</p>
               </div>
               
               <Button className="bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-100 dark:text-slate-900 mb-2 shadow-md hover:-translate-y-0.5 transition-all">
@@ -86,15 +93,15 @@ export function Profile() {
               <div className="space-y-4">
                 <div className="flex items-center gap-3 text-slate-600 dark:text-slate-400">
                   <Mail className="w-5 h-5 text-slate-400" />
-                  <span className="text-sm">sarah.smith@cityhospital.com</span>
+                  <span className="text-sm">{email}</span>
                 </div>
                 <div className="flex items-center gap-3 text-slate-600 dark:text-slate-400">
                   <Phone className="w-5 h-5 text-slate-400" />
-                  <span className="text-sm">+1 (555) 987-6543</span>
+                  <span className="text-sm">{phone}</span>
                 </div>
                 <div className="flex items-center gap-3 text-slate-600 dark:text-slate-400">
                   <MapPin className="w-5 h-5 text-slate-400" />
-                  <span className="text-sm">City General Hospital, NY</span>
+                  <span className="text-sm">{hospital}</span>
                 </div>
               </div>
             </GlassCard>
@@ -109,7 +116,7 @@ export function Profile() {
                 </div>
                 <div>
                   <p className="font-bold">Verified Practitioner</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">MCR-12345678</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">{docProfile.registration_number || user?.medicalCouncilNumber || 'MCR-12345678'}</p>
                 </div>
               </div>
             </GlassCard>
@@ -125,17 +132,17 @@ export function Profile() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Specialization</label>
-                  <Input defaultValue="Cardiology" readOnly className="bg-slate-50 dark:bg-slate-800" />
+                  <Input value={specialisation} readOnly className="bg-slate-50 dark:bg-slate-800 font-semibold" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Years of Experience</label>
-                  <Input defaultValue="12 Years" readOnly className="bg-slate-50 dark:bg-slate-800" />
+                  <Input value={experience} readOnly className="bg-slate-50 dark:bg-slate-800 font-semibold" />
                 </div>
                 <div className="sm:col-span-2">
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Short Biography</label>
                   <textarea 
-                    defaultValue="Dr. Sarah Smith is a board-certified cardiologist with over 12 years of experience. She specializes in preventive cardiology and echocardiography. She completed her fellowship at Johns Hopkins Hospital."
-                    className="w-full h-24 px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none resize-none dark:text-white"
+                    value={bio}
+                    className="w-full h-24 px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none resize-none dark:text-white text-xs leading-relaxed"
                     readOnly
                   ></textarea>
                 </div>

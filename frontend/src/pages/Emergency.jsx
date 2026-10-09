@@ -60,11 +60,12 @@ export default function Emergency() {
                     <div className="flex gap-2">
                       <input 
                         type="text" 
+                        aria-label="Describe emergency symptoms"
                         placeholder="E.g., severe chest pain, left arm numbness" 
                         className="flex-1 h-12 rounded-input border border-gray-300 px-4 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                       />
-                      <Button size="icon" className="h-12 w-12 rounded-input bg-gray-100 text-gray-700 hover:bg-gray-200 shadow-none border border-gray-300">
-                        <Mic size={24} />
+                      <Button size="icon" aria-label="Voice input for emergency symptoms" className="h-12 w-12 rounded-input bg-gray-100 text-gray-700 hover:bg-gray-200 shadow-none border border-gray-300">
+                        <Mic size={24} aria-hidden="true" />
                       </Button>
                     </div>
                     <Button className="w-full h-12 text-lg" onClick={handleGetGuidance}>
@@ -74,8 +75,8 @@ export default function Emergency() {
                 ) : (
                   <div className="space-y-4">
                     {guidanceResult.riskLevel === 'critical' && (
-                      <div className="bg-danger text-white p-4 rounded-lg font-bold text-lg flex items-center gap-3 animate-pulse">
-                        <AlertTriangle size={28} />
+                      <div role="alert" aria-live="assertive" className="bg-danger text-white p-4 rounded-lg font-bold text-lg flex items-center gap-3 animate-pulse">
+                        <AlertTriangle size={28} aria-hidden="true" />
                         CALL 112 IMMEDIATELY
                       </div>
                     )}

@@ -29,6 +29,7 @@ function ThemeToggle() {
           key={t.id}
           onClick={() => setTheme(t.id)}
           title={t.id}
+          aria-label={`Switch to ${t.id} theme`}
           className={cn(
             'p-1.5 rounded-md transition-all',
             theme === t.id
@@ -257,6 +258,7 @@ export function Header({ title, subtitle }) {
         <button
           onClick={handleCopyHeaderId}
           title="Click to copy your unique Patient ID"
+          aria-label="Copy Patient ID"
           className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-blue-50 dark:bg-blue-500/10 hover:bg-blue-100 dark:hover:bg-blue-500/20 text-blue-700 dark:text-blue-300 border border-blue-200/60 dark:border-blue-500/20 text-xs font-mono font-bold transition-all cursor-pointer group shadow-sm"
         >
           <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-sans font-semibold">ID:</span>

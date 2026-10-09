@@ -40,8 +40,8 @@ export default function EmergencyCardView({ profile }) {
         <p className="text-danger-100 font-medium opacity-90">MEDICAL INFORMATION</p>
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-white font-mono text-xs font-bold mt-2.5">
           <span>Patient ID: {patientId}</span>
-          <button onClick={handleCopyId} title="Copy Patient ID" className="hover:opacity-80 p-0.5">
-            {copiedId ? <Check size={12} className="text-emerald-300" /> : <Copy size={12} />}
+          <button onClick={handleCopyId} title="Copy Patient ID" aria-label="Copy Patient ID" className="hover:opacity-80 p-0.5">
+            {copiedId ? <Check size={12} className="text-emerald-300" aria-hidden="true" /> : <Copy size={12} aria-hidden="true" />}
           </button>
         </div>
       </div>

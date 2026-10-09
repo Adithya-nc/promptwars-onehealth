@@ -37,6 +37,7 @@ function NavItem({ item, collapsed }) {
     <NavLink
       to={item.path}
       end={item.path === '/dashboard'}
+      aria-label={collapsed ? item.label : undefined}
       className={({ isActive }) => cn(
         'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 group relative',
         isActive
@@ -45,7 +46,7 @@ function NavItem({ item, collapsed }) {
         collapsed && 'justify-center px-0'
       )}
     >
-      <Icon size={18} className="flex-shrink-0" />
+      <Icon size={18} className="flex-shrink-0" aria-hidden="true" />
       <AnimatePresence>
         {!collapsed && (
           <motion.span
@@ -83,13 +84,14 @@ export function Sidebar() {
 
   return (
     <motion.aside
+      aria-label="Patient portal navigation"
       animate={{ width: collapsed ? 68 : 240 }}
       transition={{ duration: 0.25, ease: 'easeInOut' }}
       className="hidden md:flex flex-col h-screen sticky top-0 border-r border-[var(--color-border)] bg-[var(--color-surface)] overflow-hidden flex-shrink-0 z-30"
     >
       {/* Logo */}
       <div className={cn('flex items-center gap-3 p-4 border-b border-[var(--color-border)] h-16', collapsed && 'justify-center')}>
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[var(--color-primary)] to-purple-600 flex items-center justify-center flex-shrink-0">
+        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[var(--color-primary)] to-purple-600 flex items-center justify-center flex-shrink-0" aria-hidden="true">
           <HeartPulse size={18} className="text-white" />
         </div>
         <AnimatePresence>
@@ -107,28 +109,30 @@ export function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto p-3 space-y-1">
+      <nav aria-label="Patient links" className="flex-1 overflow-y-auto p-3 space-y-1">
         {PATIENT_NAV.map(item => (
           <NavItem key={item.path} item={item} collapsed={collapsed} />
         ))}
 
-        <div className="my-3 h-px bg-[var(--color-border)]" />
+        <div className="my-3 h-px bg-[var(--color-border)]" aria-hidden="true" />
 
         {/* Emergency Button */}
         <NavLink
           to="/emergency"
+          aria-label="Emergency guidance and contacts"
           className={cn(
             'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150',
             'bg-red-50 text-red-700 hover:bg-red-100 border border-red-200',
             collapsed && 'justify-center px-0'
           )}
         >
-          <AlertTriangle size={18} className="flex-shrink-0" />
+          <AlertTriangle size={18} className="flex-shrink-0" aria-hidden="true" />
           {!collapsed && <span>Emergency</span>}
         </NavLink>
 
         <NavLink
           to="/settings"
+          aria-label="Account Settings"
           className={({ isActive }) => cn(
             'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150',
             isActive
@@ -137,19 +141,20 @@ export function Sidebar() {
             collapsed && 'justify-center px-0'
           )}
         >
-          <Settings size={18} />
+          <Settings size={18} aria-hidden="true" />
           {!collapsed && <span>Settings</span>}
         </NavLink>
 
         <button
           onClick={handleLogout}
+          aria-label="Sign Out"
           className={cn(
             'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150',
             'text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-2)] hover:text-red-500',
             collapsed && 'justify-center px-0'
           )}
         >
-          <LogOut size={18} />
+          <LogOut size={18} aria-hidden="true" />
           {!collapsed && <span>Sign Out</span>}
         </button>
       </nav>

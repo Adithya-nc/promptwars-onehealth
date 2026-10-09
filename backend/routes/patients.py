@@ -150,25 +150,27 @@ def get_profile():
             h = profile.get('height_cm') or 165
             w = profile.get('weight_kg') or 60
             bmi = round(w / ((h / 100) ** 2), 1) if h else 22.1
+            profile_dict = {
+                'uid': user.get('uid', patient_uid),
+                'patient_id': user.get('patient_id', ''),
+                'name': user.get('name', ''),
+                'email': user.get('email', ''),
+                'phone': user.get('phone', ''),
+                'dob': profile.get('dob', ''),
+                'gender': profile.get('gender', ''),
+                'blood_group': profile.get('blood_group', ''),
+                'height_cm': profile.get('height_cm'),
+                'weight_kg': profile.get('weight_kg'),
+                'allergies': profile.get('allergies', []),
+                'chronic_diseases': profile.get('chronic_diseases', []),
+                'emergency_contacts': profile.get('emergency_contacts', []),
+                'lifestyle': profile.get('lifestyle', {}),
+                'medical_notes': profile.get('medical_notes', ''),
+            }
             return jsonify({
                 'success': True,
-                'profile': {
-                    'uid': user.get('uid', patient_uid),
-                    'patient_id': user.get('patient_id', ''),
-                    'name': user.get('name', ''),
-                    'email': user.get('email', ''),
-                    'phone': user.get('phone', ''),
-                    'dob': profile.get('dob', ''),
-                    'gender': profile.get('gender', ''),
-                    'blood_group': profile.get('blood_group', ''),
-                    'height_cm': profile.get('height_cm'),
-                    'weight_kg': profile.get('weight_kg'),
-                    'allergies': profile.get('allergies', []),
-                    'chronic_diseases': profile.get('chronic_diseases', []),
-                    'emergency_contacts': profile.get('emergency_contacts', []),
-                    'lifestyle': profile.get('lifestyle', {}),
-                    'medical_notes': profile.get('medical_notes', ''),
-                },
+                'data': profile_dict,
+                'profile': profile_dict,
                 'metrics': {
                     'health_score': 88,
                     'bmi': bmi,

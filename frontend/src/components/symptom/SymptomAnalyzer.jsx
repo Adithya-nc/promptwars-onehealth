@@ -292,10 +292,10 @@ export default function SymptomAnalyzer() {
                   <button
                     type="button"
                     onClick={() => toggleSymptom(sym)}
-                    className="hover:bg-blue-700 rounded-full p-0.5 transition-colors"
-                    title={`Remove ${sym}`}
+                    className="hover:bg-blue-700 rounded-full p-0.5 transition-colors focus:outline-none focus:ring-1 focus:ring-white"
+                    aria-label={`Remove ${sym}`}
                   >
-                    <X size={12} />
+                    <X size={12} aria-hidden="true" />
                   </button>
                 </span>
               ))
@@ -306,16 +306,18 @@ export default function SymptomAnalyzer() {
         {/* Custom Symptom Search Input */}
         <form onSubmit={handleAddCustomSymptom} className="flex gap-2">
           <div className="relative flex-1">
-            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" />
+            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" aria-hidden="true" />
             <input
+              id="custom-symptom-input"
               type="text"
+              aria-label="Custom symptom input"
               value={customInput}
               onChange={e => setCustomInput(e.target.value)}
               placeholder="Type any other symptom (e.g. sore throat, dizziness, wheezing)..."
               className="w-full h-11 pl-10 pr-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] text-xs text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             />
           </div>
-          <Button type="submit" variant="outline" className="h-11 px-4 text-xs font-bold">
+          <Button type="submit" variant="outline" className="h-11 px-4 text-xs font-bold" aria-label="Add custom symptom">
             Add
           </Button>
         </form>
@@ -426,11 +428,13 @@ export default function SymptomAnalyzer() {
               </label>
               <div className="p-3 rounded-2xl bg-[var(--color-surface-2)]/80 border border-[var(--color-border)]/50 text-xs space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-[var(--color-text-primary)]">Cross-reference records</span>
+                  <label htmlFor="sync-context-checkbox" className="font-bold text-[var(--color-text-primary)] cursor-pointer">Cross-reference records</label>
                   <input
+                    id="sync-context-checkbox"
                     type="checkbox"
                     checked={includeContext}
                     onChange={e => setIncludeContext(e.target.checked)}
+                    aria-label="Cross-reference records with Health Passport"
                     className="rounded accent-blue-600 cursor-pointer"
                   />
                 </div>
@@ -446,7 +450,7 @@ export default function SymptomAnalyzer() {
                 onClick={handleStartAnalysis}
                 disabled={isAnalyzing || selectedSymptoms.length === 0}
                 className="w-full h-12 text-sm font-black bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 border-none shadow-xl shadow-blue-500/20 text-white"
-                leftIcon={<Sparkles size={18} className="animate-pulse" />}
+                leftIcon={<Sparkles size={18} className="animate-pulse" aria-hidden="true" />}
               >
                 {isAnalyzing ? 'Analyzing Clinical Signals...' : 'Analyze with AI'}
               </Button>
@@ -457,6 +461,8 @@ export default function SymptomAnalyzer() {
         {/* Loading Progress Animation */}
         {isAnalyzing && (
           <motion.div
+            role="status"
+            aria-live="polite"
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             className="p-5 rounded-2xl bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/40 space-y-3"

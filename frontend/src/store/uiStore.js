@@ -37,7 +37,9 @@ export function applyTheme(theme) {
     root.setAttribute('data-theme', 'light')
   } else {
     // system
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const prefersDark = (typeof window !== 'undefined' && typeof window.matchMedia === 'function')
+      ? window.matchMedia('(prefers-color-scheme: dark)').matches
+      : false
     root.setAttribute('data-theme', prefersDark ? 'dark' : 'light')
   }
 }

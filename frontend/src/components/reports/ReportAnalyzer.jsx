@@ -383,9 +383,10 @@ export default function ReportAnalyzer() {
                   <button
                     onClick={handleCopyId}
                     title="Copy Patient ID"
+                    aria-label="Copy Patient ID"
                     className="p-1 hover:bg-blue-200/50 dark:hover:bg-blue-500/30 rounded transition-colors text-blue-600 dark:text-blue-400 cursor-pointer"
                   >
-                    {copiedId ? <Check size={12} className="text-emerald-600" /> : <Copy size={12} />}
+                    {copiedId ? <Check size={12} className="text-emerald-600" aria-hidden="true" /> : <Copy size={12} aria-hidden="true" />}
                   </button>
                 </div>
               </div>
@@ -416,6 +417,7 @@ export default function ReportAnalyzer() {
                     <div className="flex items-center gap-2">
                       <input 
                         type="date" 
+                        aria-label="Adjust report date"
                         value={effectiveDate} 
                         onChange={e => setEffectiveDate(e.target.value)}
                         className="px-2.5 py-1 text-xs rounded-xl border border-emerald-300 dark:border-emerald-700 bg-white dark:bg-slate-800 text-[var(--color-text-primary)] font-mono outline-none"
@@ -425,6 +427,7 @@ export default function ReportAnalyzer() {
                   ) : (
                     <button 
                       onClick={() => setIsEditingDate(true)}
+                      aria-label="Adjust detected report date"
                       className="text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:underline cursor-pointer"
                     >
                       Adjust Date
@@ -452,9 +455,11 @@ export default function ReportAnalyzer() {
                 </div>
 
                 <div className="flex items-center gap-2 self-start sm:self-center">
-                  <span className="text-[11px] font-semibold text-slate-500 hidden sm:inline">Set Date:</span>
+                  <label htmlFor="report-manual-date" className="text-[11px] font-semibold text-slate-500 hidden sm:inline">Set Date:</label>
                   <input 
+                    id="report-manual-date"
                     type="date" 
+                    aria-label="Set report date"
                     value={effectiveDate} 
                     onChange={e => setEffectiveDate(e.target.value)}
                     className="px-2.5 py-1 text-xs rounded-xl border border-blue-200 dark:border-blue-700 bg-white dark:bg-slate-800 text-[var(--color-text-primary)] font-mono outline-none"

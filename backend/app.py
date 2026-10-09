@@ -121,6 +121,7 @@ def create_app(config_class=Config):
 
     # Health Check Endpoint
     @app.route('/api/health', methods=['GET'])
+    @app.route('/health', methods=['GET'])
     def health_check():
         return jsonify({
             "status": "healthy",
@@ -128,6 +129,7 @@ def create_app(config_class=Config):
             "mock_mode": app.config['MOCK_MODE'],
             "firebase_initialized": len(firebase_admin._apps) > 0
         })
+
 
     # Root Route
     @app.route('/')

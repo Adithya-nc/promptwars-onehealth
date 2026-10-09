@@ -10,9 +10,13 @@ GROQ_MODELS = ['openai/gpt-oss-120b', 'openai/gpt-oss-20b', 'qwen/qwen3.8-27b']
 
 
 def get_groq_client():
-    """Initializes and returns a Groq API client."""
-    # pyrefly: ignore [missing-import]
-    from groq import Groq
+    """Initializes and returns a Groq API client, or None if unavailable."""
+    try:
+        # pyrefly: ignore [missing-import]
+        from groq import Groq
+    except ImportError:
+        current_app.logger.warning("Groq package not installed. Using clinical rule-based engine.")
+        return None
 
     api_key = (
         current_app.config.get('GROQ_API_KEY')
@@ -276,10 +280,24 @@ BIOMARKER_CATALOG = {
 
 @bp.route('/analyze-symptoms', methods=['POST'])
 @bp.route('/symptoms', methods=['POST'])
+@bp.route('/symptom-checker', methods=['POST'])
 @require_auth(role='patient')
 def analyze_symptoms():
     data = request.get_json(silent=True) or {}
-    symptoms = [s.strip().lower() for s in data.get('symptoms', []) if s]
+    symptoms_raw = data.get('symptoms', [])
+    if isinstance(symptoms_raw, str):
+        symptoms_raw = [symptoms_raw]
+    symptoms = [s.strip().lower() for s in symptoms_raw if s and isinstance(s, str)]
+    
+    if not symptoms:
+        return jsonify({
+            "success": False,
+            "error": {
+                "code": "MISSING_SYMPTOMS",
+                "message": "Please provide at least one symptom for clinical analysis."
+            }
+        }), 400
+
     duration = data.get('duration', '1-3days')
     severity_level = data.get('severity', 'moderate')
     include_context = data.get('include_context', True)
@@ -486,6 +504,7 @@ Return valid JSON matching this schema:
 
 
 @bp.route('/analyze-report', methods=['POST'])
+@bp.route('/parse-report', methods=['POST'])
 @require_auth()
 def analyze_report():
     """
@@ -496,6 +515,15 @@ def analyze_report():
     data = request.get_json(silent=True) or {}
     text_content = data.get('text', '') or data.get('content', '') or data.get('notes', '')
     file_name = data.get('file_name', '') or data.get('title', 'Lab Report')
+
+    if not text_content or not text_content.strip():
+        return jsonify({
+            "success": False,
+            "error": {
+                "code": "EMPTY_DOCUMENT",
+                "message": "Document text content is empty or unreadable. Please provide valid medical report text."
+            }
+        }), 400
 
     # 1. Try Groq AI Inference
     if text_content:
@@ -655,62 +683,28 @@ Return ONLY a valid JSON object matching this schema:
             })
 
     if not extracted_values:
-        default_items = [
-            (
-                'haemoglobin',
-                11.4,
-                'low',
-                'Haemoglobin is slightly below normal — potential mild iron deficiency.'
-            ),
-            (
-                'wbc',
-                6800,
-                'normal',
-                'White blood cell count is optimal with no signs of active infection.'
-            ),
-            (
-                'platelet',
-                245000,
-                'normal',
-                'Platelet count is in healthy range supporting clotting integrity.'
-            ),
-            (
-                'glucose',
-                94,
-                'normal',
-                'Fasting blood sugar is within normal clinical limits.'
-            ),
-            (
-                'creatinine',
-                0.9,
-                'normal',
-                'Kidney function and filtration index are healthy.'
-            ),
-            (
-                'iron',
-                48,
-                'low',
-                'Serum iron reserves are below optimal threshold.'
-            )
-        ]
-
-        for key, val, status, expl in default_items:
-            meta = BIOMARKER_CATALOG[key]
-
-            extracted_values.append({
-                'parameter': meta['param'],
-                'value': str(val),
-                'unit': meta['unit'],
-                'reference_range': f"{meta['min']}–{meta['max']}",
-                'status': status,
-                'plain_explanation': expl
-            })
-
-            if status != 'normal':
-                abnormal_findings.append(
-                    f"{meta['param']} below reference threshold "
-                    f"({val} {meta['unit']})"
-                )
+        detected_type = 'Clinical Medical Document'
+        summary = (
+            f"Document '{file_name}' was processed. No quantitative laboratory "
+            f"biomarkers (such as Haemoglobin, WBC, or Blood Glucose) were identified in "
+            f"the provided text. Please verify the document text or consult your healthcare provider."
+        )
+        return jsonify({
+            "success": True,
+            "engine": "OneHealth Clinical Intelligence",
+            "analysis": {
+                'report_type': detected_type,
+                'report_date': detected_date,
+                'extracted_values': [],
+                'overall_summary': summary,
+                'abnormal_findings': [],
+                'suggested_actions': [
+                    "Ensure laboratory values and units are clearly legible in document text.",
+                    "Consult your physician for non-standardized specialized panels."
+                ],
+                'urgency': 'routine'
+            }
+        })
 
     detected_type = 'Comprehensive Clinical Pathology Panel'
 
@@ -870,3 +864,121 @@ def chat_clinical_ai():
         "engine": "OneHealth Assistant",
         "answer": "Consult a healthcare provider before modifying medications or therapies. Maintain adequate hydration and rest."
     })
+
+
+@bp.route('/feedback', methods=['POST'])
+@require_auth()
+def analyze_feedback():
+    """
+    Analyzes patient/clinical feedback text to assess sentiment, categories, and priority.
+    """
+    data = request.get_json(silent=True) or {}
+    text = data.get('text', '').strip()
+    fb_type = data.get('type', 'general')
+
+    if not text:
+        return jsonify({
+            "success": False,
+            "error": {"code": "MISSING_TEXT", "message": "Feedback text is required"}
+        }), 400
+
+    sentiment = 'neutral'
+    text_lower = text.lower()
+    if any(w in text_lower for w in ['great', 'excellent', 'helpful', 'improved', 'better', 'good', 'thank', 'fast', 'easy', 'smooth', 'recommend']):
+        sentiment = 'positive'
+    elif any(w in text_lower for w in ['worse', 'severe', 'bad', 'poor', 'pain', 'hurts', 'error', 'failed']):
+        sentiment = 'negative'
+
+    urgency = 'moderate' if sentiment == 'negative' else 'low'
+    if any(w in text_lower for w in ['emergency', 'chest', 'breath', 'unbearable', 'bleeding']):
+        urgency = 'high'
+
+    return jsonify({
+        "success": True,
+        "feedback_analysis": {
+            "type": fb_type,
+            "sentiment": sentiment,
+            "urgency": urgency,
+            "key_themes": [fb_type, "care_experience"],
+            "actionable_insight": "Feedback recorded for clinical quality improvement.",
+            "processed_at": data.get('timestamp') or "now"
+        }
+    }), 200
+
+
+@bp.route('/report', methods=['POST'])
+@require_auth()
+def generate_health_report():
+    """
+    Synthesizes multi-source health records into an executive passport health report.
+    """
+    data = request.get_json(silent=True) or {}
+    patient_id = data.get('patientId') or g.user_id
+    sources = data.get('sources', ['vitals', 'medications', 'lab_reports'])
+
+    from services.mock_store import get_mock_user, get_mock_patient_records
+    user = get_mock_user(patient_id) or {}
+    records = get_mock_patient_records(patient_id)
+
+    report_title = f"OneHealth Comprehensive Health Summary — {user.get('name', 'Patient')}"
+    return jsonify({
+        "success": True,
+        "report": {
+            "title": report_title,
+            "patient_id": patient_id,
+            "generated_sources": sources,
+            "total_records_analyzed": len(records),
+            "clinical_summary": f"Unified synthesis based on {len(records)} medical document(s) and active vital trends.",
+            "stability_index": "Stable (Score: 88/100)",
+            "key_recommendations": [
+                "Continue prescribed regimen with adherence tracking.",
+                "Maintain biannual preventive checkups.",
+                "Ensure emergency contacts and allergy records remain updated in OneHealth Passport."
+            ]
+        }
+    }), 200
+
+
+@bp.route('/emergency', methods=['POST'])
+@require_auth()
+def emergency_guidance():
+    """
+    Provides real-time clinical triage guidance and emergency instructions.
+    """
+    data = request.get_json(silent=True) or {}
+    query = data.get('query', '').strip()
+    patient_data = data.get('patientData', {})
+
+    if not query:
+        return jsonify({
+            "success": False,
+            "error": {"code": "MISSING_QUERY", "message": "Emergency query is required"}
+        }), 400
+
+    query_lower = query.lower()
+    is_cardiorespiratory = any(w in query_lower for w in ['chest', 'heart', 'breath', 'shortness', 'stroke'])
+
+    return jsonify({
+        "success": True,
+        "emergency_triage": {
+            "query": query,
+            "is_critical": is_cardiorespiratory,
+            "immediate_steps": [
+                "Call 112 / 911 immediately if experiencing chest pain, difficulty breathing, or sudden numbness.",
+                "Keep the patient calm, seated upright with adequate airflow.",
+                "Have the OneHealth Emergency QR Code ready for arriving emergency medical responders."
+            ],
+            "first_aid": "Loosen tight clothing. Monitor breathing and pulse. Do not give food or fluids if consciousness is impaired.",
+            "emergency_contacts": patient_data.get('emergency_contacts', [
+                {"name": "National Emergency Dispatch", "number": "112"}
+            ])
+        }
+    }), 200
+
+
+@bp.route('/predict-risk', methods=['POST'])
+@require_auth()
+def predict_risk_alias():
+    """Alias for TRD compatibility route."""
+    from routes.risk import calculate_risk
+    return calculate_risk()

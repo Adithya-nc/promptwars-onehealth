@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect } from 'react'
+import { Suspense, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom'
 import { useAuthStore } from './store/authStore'
 import { useUIStore, applyTheme } from './store/uiStore'
@@ -50,37 +50,6 @@ function PrivateRoute() {
     return <Navigate to="/login" replace />
   }
   return <Outlet />
-}
-
-// Page title map
-const PAGE_TITLES = {
-  '/dashboard':          { title: 'Dashboard',             subtitle: 'Your health at a glance' },
-  '/passport':           { title: 'Health Passport',        subtitle: 'Your complete medical history' },
-  '/symptoms':           { title: 'Symptom Analyzer',       subtitle: 'AI-powered health triage' },
-  '/emergency':          { title: 'Emergency Card',         subtitle: 'Critical information for first responders' },
-  '/reports':            { title: 'Report Analyzer',        subtitle: 'AI analysis of your lab reports' },
-  '/medications':        { title: 'Medications',            subtitle: 'Track and manage your prescriptions' },
-  '/risk':               { title: 'Risk Prediction',        subtitle: 'AI-driven health risk assessment' },
-  '/feedback-analytics': { title: 'Feedback Analytics',    subtitle: 'AI sentiment analysis' },
-  '/health-report':      { title: 'AI Health Report',      subtitle: 'Generate your comprehensive health report' },
-  '/doctor-access':      { title: 'Doctor Access',         subtitle: 'Manage healthcare provider permissions & consent' },
-  '/settings':           { title: 'Settings',              subtitle: 'Manage your account and preferences' },
-}
-
-function DashboardShellWrapper({ pagePath }) {
-  const info = PAGE_TITLES[pagePath] || {}
-  return <AppShell title={info.title} subtitle={info.subtitle} />
-}
-
-// Placeholder for pages not yet built
-function Placeholder({ name }) {
-  return (
-    <div className="page-container py-16 flex flex-col items-center justify-center text-center">
-      <div className="w-16 h-16 rounded-2xl bg-[var(--color-surface-2)] flex items-center justify-center mb-4 text-3xl">🚧</div>
-      <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">{name}</h1>
-      <p className="text-[var(--color-text-secondary)] mt-2">This page is coming soon.</p>
-    </div>
-  )
 }
 
 export default function App() {

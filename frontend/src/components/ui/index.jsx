@@ -1,8 +1,8 @@
-import React, { useRef } from 'react'
+import { useRef } from 'react'
 import { motion, useMotionValue, useTransform } from 'framer-motion'
 import { cn } from '../../utils/formatters'
 
-// Premium 3D StatCard
+// Premium Clinical 3D StatCard
 export function StatCard({ icon, label, value, trend, trendLabel, color = 'primary', className, onClick }) {
   const cardRef = useRef(null)
   
@@ -10,8 +10,8 @@ export function StatCard({ icon, label, value, trend, trendLabel, color = 'prima
   const x = useMotionValue(0)
   const y = useMotionValue(0)
 
-  const rotateX = useTransform(y, [-100, 100], [7, -7])
-  const rotateY = useTransform(x, [-100, 100], [-7, 7])
+  const rotateX = useTransform(y, [-100, 100], [5, -5])
+  const rotateY = useTransform(x, [-100, 100], [-5, 5])
 
   const handleMouseMove = (e) => {
     if (!cardRef.current) return
@@ -30,12 +30,48 @@ export function StatCard({ icon, label, value, trend, trendLabel, color = 'prima
   }
 
   const colorMap = {
-    primary: { bg: 'bg-blue-50 dark:bg-blue-500/10', icon: 'text-[var(--color-primary)]', text: 'text-[var(--color-primary)]', glow: 'hover:shadow-[0_15px_30px_rgba(26,86,219,0.15)] hover:border-blue-500/30' },
-    success: { bg: 'bg-emerald-50 dark:bg-emerald-500/10', icon: 'text-emerald-600', text: 'text-emerald-600', glow: 'hover:shadow-[0_15px_30px_rgba(14,159,110,0.15)] hover:border-emerald-500/30' },
-    warning: { bg: 'bg-amber-50 dark:bg-amber-500/10',  icon: 'text-amber-600',  text: 'text-amber-600', glow: 'hover:shadow-[0_15px_30px_rgba(217,119,6,0.15)] hover:border-amber-500/30' },
-    danger:  { bg: 'bg-red-50 dark:bg-red-500/10',    icon: 'text-red-600',    text: 'text-red-600', glow: 'hover:shadow-[0_15px_30px_rgba(224,36,36,0.15)] hover:border-red-500/30' },
-    purple:  { bg: 'bg-purple-50 dark:bg-purple-500/10', icon: 'text-purple-600', text: 'text-purple-600', glow: 'hover:shadow-[0_15px_30px_rgba(147,51,234,0.15)] hover:border-purple-500/30' },
-    orange:  { bg: 'bg-orange-50 dark:bg-orange-500/10', icon: 'text-orange-600', text: 'text-orange-600', glow: 'hover:shadow-[0_15px_30px_rgba(234,88,12,0.15)] hover:border-orange-500/30' },
+    primary: { 
+      bg: 'bg-blue-50/90 dark:bg-blue-500/15', 
+      icon: 'text-blue-600 dark:text-blue-400', 
+      text: 'text-blue-600 dark:text-blue-400', 
+      glow: 'hover:shadow-[0_16px_36px_-6px_rgba(37,99,235,0.16)] hover:border-blue-500/40',
+      pill: 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300'
+    },
+    success: { 
+      bg: 'bg-teal-50/90 dark:bg-teal-500/15', 
+      icon: 'text-teal-600 dark:text-teal-400', 
+      text: 'text-teal-600 dark:text-teal-400', 
+      glow: 'hover:shadow-[0_16px_36px_-6px_rgba(13,148,136,0.16)] hover:border-teal-500/40',
+      pill: 'bg-teal-50 text-teal-700 dark:bg-teal-950/40 dark:text-teal-300'
+    },
+    warning: { 
+      bg: 'bg-amber-50/90 dark:bg-amber-500/15',  
+      icon: 'text-amber-600 dark:text-amber-400',  
+      text: 'text-amber-600 dark:text-amber-400', 
+      glow: 'hover:shadow-[0_16px_36px_-6px_rgba(245,158,11,0.16)] hover:border-amber-500/40',
+      pill: 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300'
+    },
+    danger:  { 
+      bg: 'bg-red-50/90 dark:bg-red-500/15',    
+      icon: 'text-red-600 dark:text-red-400',    
+      text: 'text-red-600 dark:text-red-400', 
+      glow: 'hover:shadow-[0_16px_36px_-6px_rgba(239,68,68,0.16)] hover:border-red-500/40',
+      pill: 'bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300'
+    },
+    purple:  { 
+      bg: 'bg-purple-50/90 dark:bg-purple-500/15', 
+      icon: 'text-purple-600 dark:text-purple-400', 
+      text: 'text-purple-600 dark:text-purple-400', 
+      glow: 'hover:shadow-[0_16px_36px_-6px_rgba(168,85,247,0.16)] hover:border-purple-500/40',
+      pill: 'bg-purple-50 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300'
+    },
+    orange:  { 
+      bg: 'bg-orange-50/90 dark:bg-orange-500/15', 
+      icon: 'text-orange-600 dark:text-orange-400', 
+      text: 'text-orange-600 dark:text-orange-400', 
+      glow: 'hover:shadow-[0_16px_36px_-6px_rgba(249,115,22,0.16)] hover:border-orange-500/40',
+      pill: 'bg-orange-50 text-orange-700 dark:bg-orange-950/40 dark:text-orange-300'
+    },
   }
   const c = colorMap[color] || colorMap.primary
 
@@ -52,43 +88,48 @@ export function StatCard({ icon, label, value, trend, trendLabel, color = 'prima
         perspective: 1000,
       }}
       whileHover={{
-        scale: 1.03,
-        y: -4,
-        z: 15,
+        scale: 1.02,
+        y: -3,
+        z: 12,
       }}
-      transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+      transition={{ type: 'spring', stiffness: 350, damping: 25 }}
       className={cn(
-        'rounded-2xl border border-white/20 dark:border-white/5 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl p-5 cursor-pointer shadow-md relative overflow-hidden transition-all duration-300',
+        'rounded-2xl border border-slate-200/80 dark:border-white/10 bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl p-5 cursor-pointer shadow-[0_4px_24px_-2px_rgba(0,0,0,0.05),inset_0_1px_1px_rgba(255,255,255,0.7)] dark:shadow-[0_4px_24px_-2px_rgba(0,0,0,0.3),inset_0_1px_1px_rgba(255,255,255,0.05)] relative overflow-hidden transition-all duration-300',
         c.glow,
         className
       )}
     >
-      {/* Glow overlay indicator */}
+      {/* Specular clinical top-edge reflection */}
       <div 
-        className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent dark:from-white/5 pointer-events-none" 
-        style={{ transform: 'translateZ(5px)' }}
+        className="absolute inset-0 bg-gradient-to-b from-white/35 via-transparent to-transparent dark:from-white/10 pointer-events-none" 
+        style={{ transform: 'translateZ(3px)' }}
       />
       
-      <div className="relative z-10 flex flex-col justify-between h-full" style={{ transform: 'translateZ(20px)' }}>
+      <div className="relative z-10 flex flex-col justify-between h-full" style={{ transform: 'translateZ(15px)' }}>
         <div className="flex items-center justify-between mb-4">
-          <span className="text-sm font-semibold text-[var(--color-text-secondary)]">{label}</span>
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{label}</span>
           <motion.div 
-            whileHover={{ rotate: 15, scale: 1.1 }}
-            className={cn('p-2.5 rounded-xl shadow-sm', c.bg)}
+            whileHover={{ scale: 1.08 }}
+            className={cn('p-2.5 rounded-xl shadow-sm border border-black/5 dark:border-white/5 relative', c.bg)}
           >
             <span className={cn('block w-5 h-5 flex items-center justify-center', c.icon)}>{icon}</span>
+            <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-current opacity-70 animate-ping" />
           </motion.div>
         </div>
         <div>
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-3xl font-black text-[var(--color-text-primary)] font-data"
+            className="text-3xl font-black text-slate-900 dark:text-white font-data tracking-tight"
           >
             {value}
           </motion.div>
-          {trendLabel && (
-            <p className="text-xs text-[var(--color-text-muted)] mt-1.5 font-medium">{trendLabel}</p>
+          {(trendLabel || trend) && (
+            <div className="flex items-center gap-1.5 mt-2">
+              <span className={cn('inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold', c.pill)}>
+                {trendLabel || trend}
+              </span>
+            </div>
           )}
         </div>
       </div>
@@ -220,3 +261,4 @@ export * from './Button';
 export * from './Input';
 export * from './Card';
 export * from './Badge';
+export * from './ClinicalChart';

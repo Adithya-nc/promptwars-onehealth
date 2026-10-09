@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate, Link } from 'react-router-dom'
 import {
-  FileText, Pill, Stethoscope, Syringe, Activity,
-  AlertTriangle, Upload, TrendingUp, TrendingDown,
-  ChevronRight, Lightbulb, X, ArrowRight, Clock,
-  BarChart3, Sparkles, Star, Check, Sparkle, Calendar, ShieldCheck, Heart, Copy
+  FileText, Pill, Stethoscope, Activity,
+  AlertTriangle, Upload,
+  ChevronRight, ArrowRight, Clock,
+  BarChart3, Sparkles, Star, Check, Calendar, ShieldCheck, Copy
 } from 'lucide-react'
 import {
   XAxis, YAxis, CartesianGrid, Tooltip,
@@ -15,26 +15,11 @@ import { useUserStore } from '../../store/userStore'
 import { useAuthStore } from '../../store/authStore'
 import { useRecordsStore } from '../../store/recordsStore'
 import { useMedicationStore } from '../../store/medicationStore'
-import { StatCard, Avatar, ProgressBar, Alert, EmptyState, GlassCard } from '../ui/index'
+import { GlassCard } from '../ui/index'
 import { Button } from '../ui/Button'
-import { RecordTypeBadge } from '../ui/Badge'
-import { formatDate, formatRelative, getRecordTypeLabel, getHealthScoreConfig, cn } from '../../utils/formatters'
+import { getHealthScoreConfig, cn } from '../../utils/formatters'
 
-// Animated count-up number
-function CountUp({ value, duration = 1000 }) {
-  const [count, setCount] = useState(0)
-  useEffect(() => {
-    let start = 0
-    const step = value / (duration / 16)
-    const timer = setInterval(() => {
-      start += step
-      if (start >= value) { setCount(value); clearInterval(timer) }
-      else setCount(Math.floor(start))
-    }, 16)
-    return () => clearInterval(timer)
-  }, [value, duration])
-  return <span>{count}</span>
-}
+
 
 // Centerpiece 3D Health Gauge
 function CenterpieceHealthScore({ score }) {
@@ -244,17 +229,42 @@ function CustomTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null
   return (
     <motion.div 
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className="bg-[var(--color-surface)]/90 backdrop-blur-md border border-[var(--color-border)] rounded-xl p-3 shadow-xl"
+      initial={{ opacity: 0, scale: 0.96, y: 3 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      transition={{ duration: 0.15 }}
+      className="rounded-xl border border-white/20 dark:border-white/10 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl p-3.5 shadow-2xl min-w-[170px]"
     >
-      <p className="text-[10px] font-bold text-[var(--color-text-muted)] mb-1">{label}</p>
-      {payload.map((p, i) => (
-        <p key={i} className="text-xs font-black flex items-center gap-2" style={{ color: p.color }}>
-          <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: p.color, boxShadow: `0 0 8px ${p.color}` }} />
-          {p.name}: {p.value}{p.unit || ''}
-        </p>
-      ))}
+      <div className="flex items-center justify-between gap-2 border-b border-slate-200/80 dark:border-slate-800/80 pb-2 mb-2">
+        <div className="flex items-center gap-1.5">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-teal-500" />
+          </span>
+          <span className="text-[10px] font-bold tracking-wider uppercase text-slate-500 dark:text-slate-400">
+            Vital Reading
+          </span>
+        </div>
+        <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 font-mono">
+          {label}
+        </span>
+      </div>
+      <div className="space-y-1.5">
+        {payload.map((p, i) => (
+          <div key={i} className="flex items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-2">
+              <span
+                className="w-2.5 h-2.5 rounded-full shadow-sm flex-shrink-0"
+                style={{ backgroundColor: p.color, boxShadow: `0 0 8px ${p.color}80` }}
+              />
+              <span className="font-medium text-slate-600 dark:text-slate-300">{p.name}</span>
+            </div>
+            <span className="font-black font-mono text-slate-900 dark:text-white">
+              {p.value}
+              {p.unit && <span className="text-[10px] text-slate-400 font-sans font-normal ml-0.5">{p.unit}</span>}
+            </span>
+          </div>
+        ))}
+      </div>
     </motion.div>
   )
 }
@@ -429,15 +439,6 @@ export default function Dashboard() {
   const chartData = selectTrendData()
   const tc = trendConfig[trendType] || trendConfig.bloodSugar
 
-  const containerVariants = {
-    hidden: {},
-    show: { transition: { staggerChildren: 0.06 } }
-  }
-  const itemVariant = {
-    hidden: { opacity: 0, y: 16 },
-    show:   { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } }
-  }
-
   return (
     <>
       <AnimatePresence>
@@ -569,20 +570,22 @@ export default function Dashboard() {
                   <AreaChart data={chartData} margin={{ top: 5, right: 5, bottom: 5, left: -25 }}>
                     <defs>
                       <linearGradient id="colorGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%"  stopColor={tc.color} stopOpacity={0.4} />
-                        <stop offset="95%" stopColor={tc.color} stopOpacity={0} />
+                        <stop offset="0%"  stopColor={tc.color} stopOpacity={0.45} />
+                        <stop offset="60%" stopColor={tc.color} stopOpacity={0.12} />
+                        <stop offset="100%" stopColor={tc.color} stopOpacity={0} />
                       </linearGradient>
                       {tc.keySec && (
                         <linearGradient id="colorGradSec" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%"  stopColor={tc.colorSec} stopOpacity={0.3} />
-                          <stop offset="95%" stopColor={tc.colorSec} stopOpacity={0} />
+                          <stop offset="0%"  stopColor={tc.colorSec} stopOpacity={0.35} />
+                          <stop offset="60%" stopColor={tc.colorSec} stopOpacity={0.1} />
+                          <stop offset="100%" stopColor={tc.colorSec} stopOpacity={0} />
                         </linearGradient>
                       )}
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="currentColor" opacity={0.08} vertical={false} />
                     <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'var(--color-text-muted)', fontWeight: 'semibold' }} axisLine={false} tickLine={false} dy={8} />
                     <YAxis tick={{ fontSize: 10, fill: 'var(--color-text-muted)', fontWeight: 'semibold' }} axisLine={false} tickLine={false} />
-                    <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'var(--color-primary)', strokeWidth: 1, strokeDasharray: '4 4' }} />
+                    <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(13,148,136,0.6)', strokeWidth: 1.5, strokeDasharray: '4 4' }} />
                     
                     <Area
                       type="monotone"

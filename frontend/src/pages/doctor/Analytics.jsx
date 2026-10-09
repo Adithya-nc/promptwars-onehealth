@@ -1,11 +1,11 @@
-import React from 'react'
 import { motion } from 'framer-motion'
 import { 
   PieChart, Pie, Cell, Tooltip, ResponsiveContainer,
   LineChart, Line, XAxis, YAxis, CartesianGrid
 } from 'recharts'
 import { MessageSquareHeart, Frown, MessageCircle, ThumbsUp, TrendingUp } from 'lucide-react'
-import { Card, GlassCard } from '../../components/ui'
+import { GlassCard } from '../../components/ui'
+import { ClinicalTooltip } from '../../components/ui/ClinicalChart'
 
 const SENTIMENT_DATA = [
   { name: 'Positive', value: 68, color: '#10b981' },
@@ -107,33 +107,36 @@ export function Analytics() {
         <motion.div variants={itemVariants} className="lg:col-span-1">
           <GlassCard className="p-6 h-[400px]">
             <h3 className="font-bold text-slate-900 dark:text-white mb-6">Sentiment Analysis</h3>
-            <div className="h-[250px] w-full">
+            <div className="h-[250px] w-full relative">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
                     data={SENTIMENT_DATA}
-                    innerRadius={60}
-                    outerRadius={100}
-                    paddingAngle={5}
+                    innerRadius={65}
+                    outerRadius={95}
+                    paddingAngle={6}
                     dataKey="value"
                     isAnimationActive={true}
                     animationDuration={1000}
+                    stroke="none"
                   >
                     {SENTIMENT_DATA.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip 
-                    contentStyle={{ borderRadius: '12px', background: 'rgba(255, 255, 255, 0.9)', backdropFilter: 'blur(10px)', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
-                  />
+                  <Tooltip content={<ClinicalTooltip title="Sentiment" unit="%" />} />
                 </PieChart>
               </ResponsiveContainer>
+              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <span className="text-2xl font-black text-slate-900 dark:text-white font-mono">68%</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Positive</span>
+              </div>
             </div>
             <div className="flex justify-center gap-6 mt-4">
               {SENTIMENT_DATA.map(item => (
                 <div key={item.name} className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }}></div>
-                  <span className="text-sm text-slate-600 dark:text-slate-400 font-medium">{item.name} ({item.value}%)</span>
+                  <div className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: item.color, boxShadow: `0 0 8px ${item.color}60` }}></div>
+                  <span className="text-xs text-slate-600 dark:text-slate-400 font-bold">{item.name} ({item.value}%)</span>
                 </div>
               ))}
             </div>
@@ -147,11 +150,11 @@ export function Analytics() {
             <div className="h-[300px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={TREND_DATA} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(226, 232, 240, 0.3)" />
-                  <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fill: '#64748b'}} dy={10} />
-                  <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748b'}} domain={['dataMin - 5', 'dataMax + 5']} />
-                  <Tooltip contentStyle={{ borderRadius: '12px', background: 'rgba(255, 255, 255, 0.9)', backdropFilter: 'blur(10px)', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
-                  <Line type="monotone" dataKey="score" stroke="#3b82f6" strokeWidth={3} dot={{ r: 4, fill: '#3b82f6', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 6 }} isAnimationActive={true} animationDuration={1200} />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" opacity={0.08} />
+                  <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 11, fontWeight: 600}} dy={10} />
+                  <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 11, fontWeight: 600}} domain={['dataMin - 5', 'dataMax + 5']} />
+                  <Tooltip content={<ClinicalTooltip title="Monthly Index" unit="%" />} cursor={{ stroke: 'rgba(37,99,235,0.6)', strokeWidth: 1.5, strokeDasharray: '4 4' }} />
+                  <Line type="monotone" name="Satisfaction Score" dataKey="score" stroke="#2563eb" strokeWidth={3.5} dot={{ r: 5, fill: '#2563eb', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 7, fill: '#2563eb', strokeWidth: 2, stroke: '#fff' }} isAnimationActive={true} animationDuration={1200} />
                 </LineChart>
               </ResponsiveContainer>
             </div>

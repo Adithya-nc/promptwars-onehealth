@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState, useEffect, useCallback } from 'react'
+import { motion } from 'framer-motion'
 import {
-  Activity, ShieldCheck, AlertTriangle, Heart, Flame,
-  Wind, Sparkles, RefreshCw, ChevronRight, Sliders,
-  Share2, Download, Info, CheckCircle2, ArrowUpRight,
-  TrendingDown, TrendingUp, Save, Clock, Calendar, Check
+  Activity, ShieldCheck, Heart, Flame,
+  Wind, Sparkles, RefreshCw, Sliders,
+  Share2, Info, CheckCircle2,
+  TrendingDown, Save, Check
 } from 'lucide-react'
 import {
   XAxis, YAxis, CartesianGrid, Tooltip,
@@ -12,15 +12,14 @@ import {
 } from 'recharts'
 import { GlassCard } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
-import { Badge } from '../components/ui/Badge'
-import { StatCard, ProgressBar } from '../components/ui/index'
+import { ProgressBar } from '../components/ui/index'
+import { ClinicalTooltip } from '../components/ui/ClinicalChart'
 import { useUserStore } from '../store/userStore'
 import { useRecordsStore } from '../store/recordsStore'
 import { useToast } from '../components/ui/Toast'
 import api from '../services/api'
 
 export default function RiskPrediction() {
-  const profile = useUserStore(s => s.profile)
   const healthMetrics = useUserStore(s => s.healthMetrics)
   const addRecord = useRecordsStore(s => s.addRecord)
   const toast = useToast()
@@ -35,13 +34,11 @@ export default function RiskPrediction() {
   // Backend assessment state
   const [riskData, setRiskData] = useState(null)
   const [historyData, setHistoryData] = useState([])
-  const [isLoading, setIsLoading] = useState(true)
   const [isSimulating, setIsSimulating] = useState(false)
   const [copied, setCopied] = useState(false)
 
   // Fetch initial assessment from backend
   const fetchAssessment = useCallback(async () => {
-    setIsLoading(true)
     try {
       const response = await api.get('/risk/assessment')
       if (response.data && response.data.composite_risk_score !== undefined) {
@@ -62,12 +59,11 @@ export default function RiskPrediction() {
           respiratory: { name: 'Pulmonary & Allergy Response', risk_percentage: 24, tier: 'moderate' }
         }
       })
-    } finally {
-      setIsLoading(false)
     }
   }, [])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchAssessment()
   }, [fetchAssessment])
 
@@ -366,25 +362,19 @@ export default function RiskPrediction() {
               <AreaChart data={historyData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
                 <defs>
                   <linearGradient id="riskGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#1A56DB" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="#1A56DB" stopOpacity={0} />
+                    <stop offset="0%" stopColor="#2563EB" stopOpacity={0.45} />
+                    <stop offset="60%" stopColor="#2563EB" stopOpacity={0.12} />
+                    <stop offset="100%" stopColor="#2563EB" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
-                <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'var(--color-text-muted)', fontWeight: 'bold' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 10, fill: 'var(--color-text-muted)', fontWeight: 'bold' }} axisLine={false} tickLine={false} domain={[0, 50]} />
+                <CartesianGrid strokeDasharray="3 3" stroke="currentColor" opacity={0.08} vertical={false} />
+                <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'var(--color-text-muted)', fontWeight: 600 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 10, fill: 'var(--color-text-muted)', fontWeight: 600 }} axisLine={false} tickLine={false} domain={[0, 50]} />
                 <Tooltip
-                  content={({ active, payload, label }) => {
-                    if (!active || !payload?.length) return null
-                    return (
-                      <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl p-3 shadow-xl text-xs">
-                        <p className="font-bold text-[var(--color-text-muted)] mb-1">{label}</p>
-                        <p className="font-black text-blue-600">Composite Risk: {payload[0]?.value}%</p>
-                      </div>
-                    )
-                  }}
+                  content={<ClinicalTooltip title="Risk Trajectory" unit="%" />}
+                  cursor={{ stroke: 'rgba(37,99,235,0.6)', strokeWidth: 1.5, strokeDasharray: '4 4' }}
                 />
-                <Area type="monotone" dataKey="composite_score" stroke="#1A56DB" strokeWidth={3} fill="url(#riskGrad)" activeDot={{ r: 6 }} />
+                <Area type="monotone" name="Composite Risk" dataKey="composite_score" stroke="#2563EB" strokeWidth={3} fill="url(#riskGrad)" activeDot={{ r: 6, fill: '#2563EB', stroke: '#fff', strokeWidth: 2 }} />
               </AreaChart>
             </ResponsiveContainer>
           </div>

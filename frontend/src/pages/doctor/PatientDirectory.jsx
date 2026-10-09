@@ -1,12 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import {
   Search,
-  Filter,
-  MoreVertical,
   Activity,
-  Heart,
   Droplet,
   ChevronRight,
   ShieldAlert,
@@ -16,7 +13,7 @@ import {
   CheckCircle2,
   Users
 } from 'lucide-react'
-import { Card, Button, Input, Badge, GlassCard } from '../../components/ui'
+import { Button, GlassCard } from '../../components/ui'
 import { useDoctorStore } from '../../store/doctorStore'
 
 // ── Patient ID Search Section ────────────────────────────────────────────────

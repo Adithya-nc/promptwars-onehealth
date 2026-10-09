@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -9,20 +9,13 @@ import {
   Activity,
   FileText,
   Calendar,
-  Syringe,
-  Building,
   RefreshCw,
   ShieldOff,
   UserX,
   Stethoscope,
-  Plus,
-  CheckCircle2,
-  Clock,
-  Sparkles,
-  Check,
-  Send
+  CheckCircle2
 } from 'lucide-react'
-import { Card, GlassCard, Button, Badge, Input } from '../../components/ui'
+import { GlassCard, Button, Badge } from '../../components/ui'
 import { MedicalTimeline } from '../../components/doctor/passport/MedicalTimeline'
 import { ReportReviewModule } from '../../components/doctor/passport/ReportReviewModule'
 import { PatientIdCard } from '../../components/ui/PatientIdCard'
@@ -100,6 +93,7 @@ export function PatientPassport() {
   useEffect(() => {
     if (id) {
       fetchPatientPassport(id)
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       loadTimeline(id)
       loadMedications(id)
     }

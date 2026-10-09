@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import { useAuthStore } from '../../../store/authStore'
 import { useUIStore } from '../../../store/uiStore'
+import { HealthcareBackground } from '../../layout/HealthcareBackground'
 
 const NAV_LINKS = [
   { name: 'Dashboard', path: '/doctor/dashboard', icon: LayoutDashboard },
@@ -42,7 +43,9 @@ export function DoctorLayout() {
   const currentTitle = NAV_LINKS.find(link => location.pathname.startsWith(link.path))?.name || 'Portal'
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col md:flex-row transition-colors duration-300">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col md:flex-row transition-colors duration-300 relative overflow-hidden">
+      {/* Clinical Doctor Portal Healthcare Themed Background */}
+      <HealthcareBackground variant="doctor" />
       
       {/* Mobile Header */}
       <header className="md:hidden flex items-center justify-between p-4 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-50">
@@ -174,10 +177,7 @@ export function DoctorLayout() {
         </header>
 
         {/* Page Content with Transition */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-slate-50 dark:bg-slate-950 relative">
-          {/* Background glowing orb decorations */}
-          <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-blue-500/5 dark:bg-blue-500/10 rounded-full blur-[100px] pointer-events-none z-0" />
-          <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-indigo-500/5 dark:bg-indigo-500/10 rounded-full blur-[90px] pointer-events-none z-0" />
+        <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-transparent relative">
           
           <AnimatePresence mode="wait">
             <motion.div

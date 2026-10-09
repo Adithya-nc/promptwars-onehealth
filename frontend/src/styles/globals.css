@@ -238,15 +238,19 @@
 @layer utilities {
   /* Glassmorphism */
   .glass {
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.78);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(226, 232, 240, 0.85);
+    box-shadow: 0 4px 24px -2px rgba(0, 0, 0, 0.05), inset 0 1px 1px 0 rgba(255, 255, 255, 0.8);
   }
 
   [data-theme="dark"] .glass {
-    background: rgba(17, 24, 39, 0.7);
+    background: rgba(15, 23, 42, 0.78);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 24px -2px rgba(0, 0, 0, 0.35), inset 0 1px 1px 0 rgba(255, 255, 255, 0.06);
   }
 
   /* Gradient text */
@@ -266,20 +270,45 @@
 
   /* Card base */
   .card {
-    background: var(--color-surface);
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-card);
-    box-shadow: var(--shadow-sm);
-    transition: box-shadow var(--transition-base), transform var(--transition-base);
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.04);
+    transition: all var(--transition-base);
+  }
+
+  [data-theme="dark"] .card {
+    background: rgba(17, 24, 39, 0.85);
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.25);
   }
 
   .card:hover {
-    box-shadow: var(--shadow-md);
+    box-shadow: 0 12px 30px -4px rgba(13, 148, 136, 0.1), 0 4px 10px -2px rgba(0, 0, 0, 0.04);
+    border-color: rgba(13, 148, 136, 0.3);
   }
 
   .card-interactive:hover {
-    box-shadow: var(--shadow-lg);
-    transform: translateY(-1px);
+    box-shadow: 0 16px 36px -6px rgba(13, 148, 136, 0.15);
+    transform: translateY(-2px);
+  }
+
+  /* Clinical Card */
+  .clinical-card {
+    border-radius: 1.25rem;
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 8px 30px -4px rgba(0, 0, 0, 0.04), inset 0 1px 1px rgba(255, 255, 255, 0.8);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  [data-theme="dark"] .clinical-card {
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(15, 23, 42, 0.75);
+    box-shadow: 0 8px 30px -4px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.05);
   }
 
   /* Gradient backgrounds */

@@ -1,13 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState, useRef } from 'react'
+import { motion } from 'framer-motion'
 import {
-  Stethoscope, Send, Sparkles, AlertTriangle, Pill, Check, Clock, Save,
-  RefreshCw, X, HelpCircle, Info, ChevronRight, ShieldAlert, ArrowRight,
-  Phone, Share2, CheckCircle2, User, FileText, Search, Activity
+  Stethoscope, Send, Sparkles, AlertTriangle, Pill, Save,
+  RefreshCw, X, HelpCircle, Info, ShieldAlert,
+  Phone, CheckCircle2, Search, Activity
 } from 'lucide-react'
 import { Button } from '../ui/Button'
-import { Alert, GlassCard } from '../ui/index'
-import { SeverityBadge } from '../ui/Badge'
+import { GlassCard } from '../ui/index'
 import { useUserStore } from '../../store/userStore'
 import { useRecordsStore } from '../../store/recordsStore'
 import { useToast } from '../ui/Toast'

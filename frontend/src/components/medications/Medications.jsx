@@ -1,14 +1,12 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  Pill, Plus, Clock, Check, Edit, Trash2, AlertTriangle,
-  Calendar, RefreshCw, ChevronRight, RotateCcw, Flame, ShieldAlert
+  Pill, Plus, Check, Trash2, AlertTriangle, RotateCcw, Flame, ShieldAlert
 } from 'lucide-react'
 import { Button } from '../ui/Button'
 import { Input, Select } from '../ui/Input'
 import { Modal } from '../ui/Modal'
 import { ProgressBar, EmptyState, Alert } from '../ui/index'
-import { Badge } from '../ui/Badge'
 import { useToast } from '../ui/Toast'
 import { cn } from '../../utils/formatters'
 import { useMedicationStore } from '../../store/medicationStore'
@@ -239,22 +237,23 @@ export default function Medications() {
       </div>
 
       {/* Adherence Dashboard Stats */}
+      {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 text-center shadow-sm">
-          <p className="text-2xl font-black font-data text-[var(--color-primary)]">{totalActive}</p>
+        <div className="rounded-2xl border border-slate-200/80 dark:border-white/10 bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl p-4 text-center shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05),inset_0_1px_1px_rgba(255,255,255,0.7)] dark:shadow-[0_4px_20px_-2px_rgba(0,0,0,0.3)] transition-all hover:-translate-y-0.5">
+          <p className="text-2xl font-black font-data text-blue-600 dark:text-blue-400">{totalActive}</p>
           <p className="text-xs text-[var(--color-text-muted)] font-semibold mt-1">Active Prescriptions</p>
         </div>
-        <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 text-center shadow-sm">
-          <p className="text-2xl font-black font-data text-emerald-600">{takenToday}/{totalActive}</p>
+        <div className="rounded-2xl border border-slate-200/80 dark:border-white/10 bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl p-4 text-center shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05),inset_0_1px_1px_rgba(255,255,255,0.7)] dark:shadow-[0_4px_20px_-2px_rgba(0,0,0,0.3)] transition-all hover:-translate-y-0.5">
+          <p className="text-2xl font-black font-data text-emerald-600 dark:text-emerald-400">{takenToday}/{totalActive}</p>
           <p className="text-xs text-[var(--color-text-muted)] font-semibold mt-1">Doses Taken Today</p>
         </div>
-        <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 text-center shadow-sm">
-          <p className="text-2xl font-black font-data text-indigo-600">{todayAdherence}%</p>
-          <p className="text-xs text-[var(--color-text-muted)] font-semibold mt-1">Today's Adherence</p>
+        <div className="rounded-2xl border border-slate-200/80 dark:border-white/10 bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl p-4 text-center shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05),inset_0_1px_1px_rgba(255,255,255,0.7)] dark:shadow-[0_4px_20px_-2px_rgba(0,0,0,0.3)] transition-all hover:-translate-y-0.5">
+          <p className="text-2xl font-black font-data text-teal-600 dark:text-teal-400">{todayAdherence}%</p>
+          <p className="text-xs text-[var(--color-text-muted)] font-semibold mt-1">Today ({weeklyAdherence}% wkly)</p>
         </div>
-        <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 text-center shadow-sm">
-          <p className="text-2xl font-black font-data text-amber-600 flex items-center justify-center gap-1">
-            <Flame size={18} className="text-amber-500 fill-amber-500" /> 14 Days
+        <div className="rounded-2xl border border-slate-200/80 dark:border-white/10 bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl p-4 text-center shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05),inset_0_1px_1px_rgba(255,255,255,0.7)] dark:shadow-[0_4px_20px_-2px_rgba(0,0,0,0.3)] transition-all hover:-translate-y-0.5">
+          <p className="text-2xl font-black font-data text-amber-600 dark:text-amber-400 flex items-center justify-center gap-1">
+            <Flame size={18} className="text-amber-500 fill-amber-500 animate-pulse" /> 14 Days
           </p>
           <p className="text-xs text-[var(--color-text-muted)] font-semibold mt-1">Adherence Streak</p>
         </div>

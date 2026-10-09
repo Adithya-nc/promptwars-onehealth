@@ -1,13 +1,13 @@
-import React, { useRef } from 'react'
+import { forwardRef, useRef } from 'react'
 import { motion, useMotionValue, useTransform } from 'framer-motion'
 import { cn } from '../../utils/formatters'
 
-export const Card = React.forwardRef(({ className, hover = false, glass = false, ...props }, ref) => (
+export const Card = forwardRef(({ className, hover = false, glass = false, ...props }, ref) => (
   <div
     ref={ref}
     className={cn(
-      'rounded-xl border bg-[var(--color-surface)] border-[var(--color-border)] shadow-[var(--shadow-sm)] transition-all duration-200',
-      hover && 'hover:shadow-[var(--shadow-md)] hover:-translate-y-0.5 cursor-pointer',
+      'rounded-2xl border bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl border-slate-200/80 dark:border-slate-800/80 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_20px_-2px_rgba(0,0,0,0.3)] transition-all duration-200 relative overflow-hidden',
+      hover && 'hover:shadow-[0_12px_32px_-4px_rgba(13,148,136,0.12)] hover:border-teal-500/30 hover:-translate-y-0.5 cursor-pointer',
       glass && 'glass',
       className
     )}
@@ -16,7 +16,7 @@ export const Card = React.forwardRef(({ className, hover = false, glass = false,
 ))
 Card.displayName = 'Card'
 
-export const GlassCard = React.forwardRef(({ className, children, hoverGlow = true, ...props }, ref) => {
+export const GlassCard = forwardRef(({ className, children, hoverGlow = true, ...props }, ref) => {
   const localRef = useRef(null)
   const activeRef = ref || localRef
 
@@ -24,8 +24,8 @@ export const GlassCard = React.forwardRef(({ className, children, hoverGlow = tr
   const x = useMotionValue(0)
   const y = useMotionValue(0)
 
-  const rotateX = useTransform(y, [-200, 200], [10, -10])
-  const rotateY = useTransform(x, [-200, 200], [-10, 10])
+  const rotateX = useTransform(y, [-200, 200], [6, -6])
+  const rotateY = useTransform(x, [-200, 200], [-6, 6])
 
   const handleMouseMove = (e) => {
     if (!activeRef.current) return
@@ -55,28 +55,29 @@ export const GlassCard = React.forwardRef(({ className, children, hoverGlow = tr
         perspective: 1000,
       }}
       whileHover={{
-        scale: 1.025,
-        translateY: -4,
-        z: 20,
+        scale: 1.015,
+        translateY: -3,
+        z: 15,
       }}
-      transition={{ type: 'spring', stiffness: 350, damping: 20 }}
+      transition={{ type: 'spring', stiffness: 350, damping: 25 }}
       className={cn(
-        'rounded-2xl border border-white/20 dark:border-white/5 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl p-6 shadow-xl relative overflow-hidden transition-colors duration-300 hover:border-blue-500/30',
-        hoverGlow && 'hover:shadow-[0_20px_50px_rgba(37,99,235,0.15)]',
+        'rounded-2xl border border-slate-200/70 dark:border-white/10 bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.25)] relative overflow-hidden transition-all duration-300 hover:border-teal-500/40 dark:hover:border-teal-400/30',
+        hoverGlow && 'hover:shadow-[0_16px_40px_-6px_rgba(13,148,136,0.14),0_0_0_1px_rgba(13,148,136,0.15)]',
         className
       )}
       {...props}
     >
-      {/* Light follow gradient reflection overlay */}
+      {/* Specular clinical top-edge reflection */}
       <div 
-        className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent dark:from-white/5 pointer-events-none" 
-        style={{ transform: 'translateZ(5px)' }}
+        className="absolute inset-0 bg-gradient-to-b from-white/30 via-transparent to-transparent dark:from-white/10 pointer-events-none" 
+        style={{ transform: 'translateZ(2px)' }}
       />
+      {/* Subtle surgical ambient flare on hover */}
       <div 
-        className="absolute -inset-1 bg-gradient-to-r from-transparent via-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 blur-2xl transition-opacity duration-700 pointer-events-none" 
+        className="absolute -inset-1 bg-gradient-to-r from-transparent via-teal-500/10 dark:via-teal-400/10 to-transparent opacity-0 group-hover:opacity-100 blur-2xl transition-opacity duration-700 pointer-events-none" 
         style={{ transform: 'translateZ(-1px)' }}
       />
-      <div className="relative z-10" style={{ transform: 'translateZ(15px)' }}>
+      <div className="relative z-10" style={{ transform: 'translateZ(10px)' }}>
         {children}
       </div>
     </motion.div>
@@ -84,27 +85,27 @@ export const GlassCard = React.forwardRef(({ className, children, hoverGlow = tr
 })
 GlassCard.displayName = 'GlassCard'
 
-export const CardHeader = React.forwardRef(({ className, ...props }, ref) => (
+export const CardHeader = forwardRef(({ className, ...props }, ref) => (
   <div ref={ref} className={cn('flex flex-col space-y-1.5 p-6', className)} {...props} />
 ))
 CardHeader.displayName = 'CardHeader'
 
-export const CardTitle = React.forwardRef(({ className, ...props }, ref) => (
+export const CardTitle = forwardRef(({ className, ...props }, ref) => (
   <h3 ref={ref} className={cn('text-lg font-semibold leading-none tracking-tight text-[var(--color-text-primary)]', className)} {...props} />
 ))
 CardTitle.displayName = 'CardTitle'
 
-export const CardDescription = React.forwardRef(({ className, ...props }, ref) => (
+export const CardDescription = forwardRef(({ className, ...props }, ref) => (
   <p ref={ref} className={cn('text-sm text-[var(--color-text-secondary)]', className)} {...props} />
 ))
 CardDescription.displayName = 'CardDescription'
 
-export const CardContent = React.forwardRef(({ className, ...props }, ref) => (
+export const CardContent = forwardRef(({ className, ...props }, ref) => (
   <div ref={ref} className={cn('p-6 pt-0', className)} {...props} />
 ))
 CardContent.displayName = 'CardContent'
 
-export const CardFooter = React.forwardRef(({ className, ...props }, ref) => (
+export const CardFooter = forwardRef(({ className, ...props }, ref) => (
   <div ref={ref} className={cn('flex items-center p-6 pt-0', className)} {...props} />
 ))
 CardFooter.displayName = 'CardFooter'

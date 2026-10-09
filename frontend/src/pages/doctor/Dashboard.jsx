@@ -1,16 +1,17 @@
-import React, { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { 
-  Users, Calendar, Clock, TrendingUp, AlertCircle, FileText,
-  Activity, ArrowRight, Star, MessageSquare, Search, Sparkles,
-  ShieldAlert, CheckCircle2, Heart, Award, TrendingDown
+  Users, Calendar, Clock, AlertCircle,
+  Activity, ArrowRight, Star, Search, Sparkles,
+  ShieldAlert
 } from 'lucide-react'
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, 
-  ResponsiveContainer, BarChart, Bar, Cell
+  ResponsiveContainer
 } from 'recharts'
 import { Button, GlassCard } from '../../components/ui'
+import { ClinicalTooltip } from '../../components/ui/ClinicalChart'
 import { cn } from '../../utils/formatters'
 
 // Mock Data for Doctor Analytics & Trends
@@ -24,12 +25,6 @@ const DIAGNOSIS_TRENDS = [
   { name: 'Sun', count: 2, compliance: 98 },
 ]
 
-const PIE_DATA = [
-  { name: 'Positive', value: 85, color: '#0E9F6E' },
-  { name: 'Neutral',  value: 10,  color: '#64748b' },
-  { name: 'Negative', value: 5,  color: '#E02424' },
-]
-
 const RATING_DISTRIBUTION = [
   { stars: '5 Stars', count: 180, fill: 'var(--color-emerald-500)' },
   { stars: '4 Stars', count: 45,  fill: 'var(--color-primary-400)' },
@@ -37,6 +32,8 @@ const RATING_DISTRIBUTION = [
   { stars: '2 Stars', count: 3,   fill: 'var(--color-warning)' },
   { stars: '1 Star',  count: 1,   fill: 'var(--color-danger)' },
 ]
+
+
 
 const CLINICAL_ALERTS = [
   { type: 'Critical', patient: 'David Warner', id: 'P-9821', desc: 'Abnormal ECG telemetry log.', category: 'abnormal_reports', time: '5m ago', icon: ShieldAlert, color: 'text-red-600 dark:text-red-400', bg: 'bg-red-50 dark:bg-red-500/10' },
@@ -452,20 +449,22 @@ export function Dashboard() {
               <AreaChart data={DIAGNOSIS_TRENDS} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorReportsDr" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#2563eb" stopOpacity={0.35}/>
-                    <stop offset="95%" stopColor="#2563eb" stopOpacity={0}/>
+                    <stop offset="0%" stopColor="#2563eb" stopOpacity={0.45}/>
+                    <stop offset="60%" stopColor="#2563eb" stopOpacity={0.12}/>
+                    <stop offset="100%" stopColor="#2563eb" stopOpacity={0}/>
                   </linearGradient>
                   <linearGradient id="colorCompliance" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.25}/>
-                    <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                    <stop offset="0%" stopColor="#10b981" stopOpacity={0.4}/>
+                    <stop offset="60%" stopColor="#10b981" stopOpacity={0.1}/>
+                    <stop offset="100%" stopColor="#10b981" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border)" opacity={0.5} />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 11}} dy={10} />
-                <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 11}} dx={-10} />
-                <Tooltip />
-                <Area type="monotone" dataKey="count" name="Diagnoses Treated" stroke="#2563eb" strokeWidth={3} fillOpacity={1} fill="url(#colorReportsDr)" dot={{ r: 0 }} activeDot={{ r: 6 }} />
-                <Area type="monotone" dataKey="compliance" name="Compliance Index %" stroke="#10b981" strokeWidth={2.5} fillOpacity={1} fill="url(#colorCompliance)" dot={{ r: 0 }} activeDot={{ r: 5 }} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" opacity={0.08} />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 11, fontWeight: 600}} dy={10} />
+                <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 11, fontWeight: 600}} dx={-10} />
+                <Tooltip content={<ClinicalTooltip title="Weekly Consultation Volume" />} cursor={{ stroke: 'rgba(37,99,235,0.6)', strokeWidth: 1.5, strokeDasharray: '4 4' }} />
+                <Area type="monotone" dataKey="count" name="Diagnoses Treated" stroke="#2563eb" strokeWidth={3} fillOpacity={1} fill="url(#colorReportsDr)" dot={{ r: 0 }} activeDot={{ r: 6, fill: '#2563eb', stroke: '#fff', strokeWidth: 2 }} />
+                <Area type="monotone" dataKey="compliance" name="Compliance Index %" stroke="#10b981" strokeWidth={2.5} fillOpacity={1} fill="url(#colorCompliance)" dot={{ r: 0 }} activeDot={{ r: 5, fill: '#10b981', stroke: '#fff', strokeWidth: 2 }} />
               </AreaChart>
             </ResponsiveContainer>
           </div>

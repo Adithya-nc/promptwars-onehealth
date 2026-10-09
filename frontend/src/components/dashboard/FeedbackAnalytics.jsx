@@ -1,21 +1,16 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import {
-  MessageSquare, Send, Sparkles, ThumbsUp, ThumbsDown,
-  Minus, TrendingUp, TrendingDown, Star, BarChart3,
-  Hash, Tag, RefreshCw, Award, User, Heart, Clock, Check,
-  AlertTriangle, Calendar, StarHalf, FileText
+import { Sparkles, ThumbsUp, ThumbsDown, TrendingUp, Star, BarChart3, Award, StarHalf
 } from 'lucide-react'
 import {
-  ResponsiveContainer, Tooltip,
-  LineChart, Line, XAxis, YAxis, CartesianGrid, AreaChart, Area,
+  ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, AreaChart, Area,
   BarChart, Bar, Cell
 } from 'recharts'
 import { Button } from '../ui/Button'
 import { GlassCard } from '../ui/Card'
-import { Alert, Spinner } from '../ui/index'
 import { Badge } from '../ui/Badge'
 import { useToast } from '../ui/Toast'
+import { ClinicalTooltip } from '../ui/ClinicalChart'
 import { cn } from '../../utils/formatters'
 
 // Doctor Profile Info Mock
@@ -608,11 +603,11 @@ export default function FeedbackAnalytics() {
                 </h3>
                 <ResponsiveContainer width="100%" height={220}>
                   <BarChart data={ratingDist} layout="vertical" margin={{ left: -10, right: 10 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" horizontal={false} />
-                    <XAxis type="number" tick={{ fontSize: 10, fill: 'var(--color-text-muted)' }} axisLine={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="currentColor" opacity={0.08} horizontal={false} />
+                    <XAxis type="number" tick={{ fontSize: 10, fill: 'var(--color-text-muted)', fontWeight: 600 }} axisLine={false} />
                     <YAxis dataKey="stars" type="category" tick={{ fontSize: 10, fill: 'var(--color-text-secondary)', fontWeight: 'bold' }} axisLine={false} tickLine={false} />
-                    <Tooltip formatter={(value) => `${value} reviews`} />
-                    <Bar dataKey="count" radius={[0, 6, 6, 0]}>
+                    <Tooltip content={<ClinicalTooltip title="Review Volume" unit="reviews" />} cursor={{ fill: 'rgba(37,99,235,0.06)' }} />
+                    <Bar dataKey="count" name="Reviews Count" radius={[0, 6, 6, 0]}>
                       {ratingDist.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.fill} />
                       ))}
@@ -630,21 +625,23 @@ export default function FeedbackAnalytics() {
                   <AreaChart data={trendData} margin={{ left: -20, right: 5 }}>
                     <defs>
                       <linearGradient id="satisfactionGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="var(--color-primary)" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="var(--color-primary)" stopOpacity={0}/>
+                        <stop offset="0%" stopColor="#10B981" stopOpacity={0.45}/>
+                        <stop offset="60%" stopColor="#10B981" stopOpacity={0.12}/>
+                        <stop offset="100%" stopColor="#10B981" stopOpacity={0}/>
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
-                    <XAxis dataKey="month" tick={{ fontSize: 10, fill: 'var(--color-text-muted)' }} axisLine={false} tickLine={false} />
-                    <YAxis domain={[60, 100]} tick={{ fontSize: 10, fill: 'var(--color-text-muted)' }} axisLine={false} tickLine={false} />
-                    <Tooltip />
+                    <CartesianGrid strokeDasharray="3 3" stroke="currentColor" opacity={0.08} vertical={false} />
+                    <XAxis dataKey="month" tick={{ fontSize: 10, fill: 'var(--color-text-muted)', fontWeight: 600 }} axisLine={false} tickLine={false} />
+                    <YAxis domain={[60, 100]} tick={{ fontSize: 10, fill: 'var(--color-text-muted)', fontWeight: 600 }} axisLine={false} tickLine={false} />
+                    <Tooltip content={<ClinicalTooltip title="Satisfaction Trend" unit="%" />} cursor={{ stroke: 'rgba(16,185,129,0.6)', strokeWidth: 1.5, strokeDasharray: '4 4' }} />
                     <Area
                       type="monotone"
                       dataKey="satisfaction"
                       name="Satisfaction Index"
-                      stroke="var(--color-primary)"
+                      stroke="#10B981"
                       strokeWidth={3}
                       fill="url(#satisfactionGrad)"
+                      activeDot={{ r: 6, fill: '#10B981', stroke: '#fff', strokeWidth: 2 }}
                     />
                   </AreaChart>
                 </ResponsiveContainer>

@@ -1,10 +1,10 @@
-import React, { useState, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState, useCallback } from 'react'
+import { motion } from 'framer-motion'
 import { useDropzone } from 'react-dropzone'
 import {
-  Search, Plus, Filter, ChevronRight, FileText, Pill,
-  Stethoscope, Syringe, Activity, Eye, Trash2,
-  UploadCloud, Calendar, User, Building2, X, StickyNote,
+  Search, Plus, ChevronRight, FileText, Pill,
+  Stethoscope, Syringe, Activity,
+  UploadCloud, Calendar, User, Building2, StickyNote,
   TrendingUp, TrendingDown, Minus, Download, Sparkles, QrCode, ShieldAlert,
   Copy, Check
 } from 'lucide-react'
@@ -13,10 +13,10 @@ import { useUserStore } from '../../store/userStore'
 import { Button } from '../ui/Button'
 import { Input } from '../ui/Input'
 import { Modal } from '../ui/Modal'
-import { Badge, RecordTypeBadge } from '../ui/Badge'
+import { RecordTypeBadge } from '../ui/Badge'
 import { Avatar, ProgressBar, EmptyState, Alert, GlassCard } from '../ui/index'
 import { useToast } from '../ui/Toast'
-import { formatDate, formatRelative, getRecordTypeLabel, getHealthScoreConfig } from '../../utils/formatters'
+import { formatDate, getRecordTypeLabel } from '../../utils/formatters'
 import { cn } from '../../utils/formatters'
 
 const RECORD_ICONS = {
@@ -433,7 +433,7 @@ function PassportOverview({ profile, healthMetrics }) {
           { label: 'Prescriptions', value: healthMetrics?.prescriptions_count || 0 },
           { label: 'Consultations', value: healthMetrics?.consultations_count || 0 },
           { label: 'Vaccinations',  value: healthMetrics?.vaccinations_count || 0 },
-        ].map((s, i) => (
+        ].map((s) => (
           <motion.div 
             key={s.label} 
             whileHover={{ scale: 1.03, backgroundColor: 'rgba(255,255,255,0.02)' }}
@@ -451,7 +451,6 @@ function PassportOverview({ profile, healthMetrics }) {
 }
 
 export default function Passport() {
-  const records = useRecordsStore(s => s.records)
   const activeFilter = useRecordsStore(s => s.activeFilter)
   const searchQuery = useRecordsStore(s => s.searchQuery)
   const getFilteredRecords = useRecordsStore(s => s.getFilteredRecords)

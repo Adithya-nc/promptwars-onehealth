@@ -1,13 +1,13 @@
-import React, { useState, useCallback } from 'react'
+import { useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useDropzone } from 'react-dropzone'
 import {
-  UploadCloud, FileText, Check, X, TrendingUp, TrendingDown,
-  Minus, Sparkles, Download, Save, RotateCcw, ChevronRight, Copy, ShieldCheck, User
+  UploadCloud, FileText, Check, TrendingUp, TrendingDown,
+  Minus, Sparkles, Download, Save, RotateCcw, Copy, ShieldCheck
 } from 'lucide-react'
 import { Button } from '../ui/Button'
 import { GlassCard } from '../ui/Card'
-import { Alert, ProgressBar } from '../ui/index'
+import { ProgressBar } from '../ui/index'
 import { useRecordsStore } from '../../store/recordsStore'
 import { useUserStore } from '../../store/userStore'
 import { useToast } from '../ui/Toast'

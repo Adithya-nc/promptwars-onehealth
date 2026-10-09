@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import {
-  HeartPulse, ArrowRight, ArrowLeft, Check, Plus, X,
-  UploadCloud, FileText, Activity, ShieldCheck, Trash2,
+  HeartPulse, ArrowRight, ArrowLeft, Check, Plus,
+  UploadCloud, FileText, Activity, Trash2,
   Moon, Wine, Cigarette, AlertCircle, Sparkles
 } from 'lucide-react'
 import { Button } from '../components/ui/Button'
+import { HealthcareBackground } from '../components/layout/HealthcareBackground'
 import { Input, Select } from '../components/ui/Input'
 import { ProgressBar } from '../components/ui/index'
 import { useAuthStore } from '../store/authStore'
@@ -406,16 +407,15 @@ export default function Onboarding() {
   const setProfile = useUserStore(s => s.setProfile)
 
   // Registration identity details
-  const [accountInfo, setAccountInfo] = useState({ name: '', email: '', phone: '', password: '' })
-
-  useEffect(() => {
+  const [accountInfo] = useState(() => {
     try {
       const saved = sessionStorage.getItem('pending_patient_reg')
-      if (saved) {
-        setAccountInfo(JSON.parse(saved))
-      }
-    } catch {}
-  }, [])
+      if (saved) return JSON.parse(saved)
+    } catch {
+      // fallback if unavailable
+    }
+    return { name: '', email: '', phone: '', password: '' }
+  })
 
   const [basicInfo, setBasicInfo] = useState({
     dob: '1996-05-14',
@@ -495,9 +495,11 @@ export default function Onboarding() {
   const step = STEPS[currentStep - 1]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/40 to-indigo-50/40 dark:from-slate-950 dark:via-blue-950/20 dark:to-slate-900 flex items-center justify-center p-4">
-      <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[var(--color-primary)] via-purple-500 to-[var(--color-accent)]" />
-      <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-xl">
+    <div className="min-h-screen bg-[var(--color-background)] flex items-center justify-center p-4 relative overflow-hidden transition-colors duration-300">
+      <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[var(--color-primary)] via-purple-500 to-[var(--color-accent)] z-50" />
+      {/* Healthcare Themed Background */}
+      <HealthcareBackground variant="auth" />
+      <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-xl relative z-10">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[var(--color-primary)] to-purple-600 flex items-center justify-center shadow-md">

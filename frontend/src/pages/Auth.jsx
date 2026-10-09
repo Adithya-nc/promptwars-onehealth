@@ -1,60 +1,20 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
-import { HeartPulse, Mail, Phone, Lock, User, ArrowRight, Check, Key } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { HeartPulse, Mail, Phone, Lock, User, ArrowRight } from 'lucide-react'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
 import { GlassCard } from '../components/ui/Card'
 import { useAuthStore } from '../store/authStore'
 import { useUserStore } from '../store/userStore'
 import api from '../services/api'
-
-const AUTH_PARTICLES = Array.from({ length: 6 }, (_, i) => ({
-  id: i,
-  width: (i * 9) % 30 + 10,
-  height: (i * 9) % 30 + 10,
-  left: `${(i * 17) % 100}%`,
-  top: `${(i * 23) % 100}%`,
-  x: [0, (i * 11) % 30 - 15, 0],
-  duration: (i * 7) % 10 + 15,
-}))
-
-function FloatingBackground() {
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-      <div className="absolute top-[10%] right-[10%] w-[350px] h-[350px] bg-blue-500/5 dark:bg-blue-500/10 rounded-full blur-[100px]" />
-      <div className="absolute bottom-[10%] left-[10%] w-[300px] h-[300px] bg-purple-500/5 dark:bg-purple-500/10 rounded-full blur-[100px]" />
-      {AUTH_PARTICLES.map((p) => (
-        <motion.div
-          key={p.id}
-          className="absolute rounded-full bg-blue-500/10 dark:bg-blue-400/5 blur-sm"
-          style={{
-            width: p.width,
-            height: p.height,
-            left: p.left,
-            top: p.top,
-          }}
-          animate={{
-            y: [0, -60, 0],
-            x: p.x,
-            opacity: [0.2, 0.4, 0.2],
-          }}
-          transition={{
-            duration: p.duration,
-            repeat: Infinity,
-            ease: 'linear',
-          }}
-        />
-      ))}
-    </div>
-  )
-}
+import { HealthcareBackground } from '../components/layout/HealthcareBackground'
 
 function AuthLayout({ children, title, subtitle }) {
   return (
     <div className="min-h-screen bg-[var(--color-background)] flex items-center justify-center p-4 relative overflow-hidden transition-colors duration-300">
       <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[var(--color-primary)] via-purple-500 to-[var(--color-accent)] z-50" />
-      <FloatingBackground />
+      <HealthcareBackground variant="auth" />
       <div className="w-full max-w-md relative z-10">
         {/* Logo */}
         <motion.div 
@@ -203,7 +163,6 @@ export function Register() {
 export function OTP() {
   const [code, setCode] = useState(['', '', '', '', '', ''])
   const [loading, setLoading] = useState(false)
-  const [resendTimer, setResendTimer] = useState(30)
   const navigate = useNavigate()
 
   const handleChange = (val, idx) => {

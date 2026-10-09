@@ -5,53 +5,13 @@ import { Stethoscope, ArrowRight, ArrowLeft, Upload, CheckCircle2 } from 'lucide
 import { Button, Input, GlassCard } from '../../../components/ui'
 import { useAuthStore } from '../../../store/authStore'
 import doctorService from '../../../services/doctorService'
+import { HealthcareBackground } from '../../../components/layout/HealthcareBackground'
 
 const STEPS = [
   { id: 1, title: 'Personal Info' },
   { id: 2, title: 'Professional Details' },
   { id: 3, title: 'Verification' }
 ]
-
-const DOCTOR_AUTH_PARTICLES = Array.from({ length: 6 }, (_, i) => ({
-  id: i,
-  width: (i * 9) % 30 + 10,
-  height: (i * 9) % 30 + 10,
-  left: `${(i * 17) % 100}%`,
-  top: `${(i * 23) % 100}%`,
-  x: [0, (i * 11) % 30 - 15, 0],
-  duration: (i * 7) % 10 + 15,
-}))
-
-function FloatingBackground() {
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-      <div className="absolute top-[10%] right-[10%] w-[350px] h-[350px] bg-blue-500/5 dark:bg-blue-500/10 rounded-full blur-[100px]" />
-      <div className="absolute bottom-[10%] left-[10%] w-[300px] h-[300px] bg-emerald-500/5 dark:bg-emerald-500/10 rounded-full blur-[100px]" />
-      {DOCTOR_AUTH_PARTICLES.map((p) => (
-        <motion.div
-          key={p.id}
-          className="absolute rounded-full bg-blue-500/10 dark:bg-blue-400/5 blur-sm"
-          style={{
-            width: p.width,
-            height: p.height,
-            left: p.left,
-            top: p.top,
-          }}
-          animate={{
-            y: [0, -60, 0],
-            x: p.x,
-            opacity: [0.2, 0.4, 0.2],
-          }}
-          transition={{
-            duration: p.duration,
-            repeat: Infinity,
-            ease: 'linear',
-          }}
-        />
-      ))}
-    </div>
-  )
-}
 
 export function DoctorRegister() {
   const navigate = useNavigate()
@@ -99,7 +59,8 @@ export function DoctorRegister() {
 
   return (
     <div className="min-h-screen bg-[var(--color-background)] py-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center relative overflow-hidden transition-colors duration-300">
-      <FloatingBackground />
+      {/* Clinical Doctor Portal Healthcare Themed Background */}
+      <HealthcareBackground variant="doctor" />
       
       <div className="max-w-3xl w-full relative z-10">
         <GlassCard className="overflow-hidden border border-white/20 dark:border-white/5 p-0">

@@ -1,9 +1,8 @@
-import React, { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState } from 'react'
+import { motion } from 'framer-motion'
 import {
-  Phone, AlertTriangle, Heart, Pill, Droplet,
-  Share2, QrCode, Copy, Check, Mic, X, ChevronDown,
-  Shield, Clock, Siren, HeartPulse
+  Phone, AlertTriangle, Heart, Pill,
+  Share2, QrCode, Copy, Check, Mic, Siren
 } from 'lucide-react'
 import { useUserStore } from '../../store/userStore'
 import { useMedicationStore } from '../../store/medicationStore'

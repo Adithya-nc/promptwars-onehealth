@@ -1,10 +1,11 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Stethoscope, ArrowRight, CheckCircle2 } from 'lucide-react'
 import { useAuthStore } from '../../../store/authStore'
 import { Button, Input, GlassCard } from '../../../components/ui'
 import doctorService from '../../../services/doctorService'
+import { HealthcareBackground } from '../../../components/layout/HealthcareBackground'
 
 export function DoctorLogin() {
   const navigate = useNavigate()
@@ -32,9 +33,8 @@ export function DoctorLogin() {
 
   return (
     <div className="min-h-screen bg-[var(--color-background)] flex items-center justify-center p-4 relative overflow-hidden transition-colors duration-300">
-      {/* Background ambient light */}
-      <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-blue-500/5 dark:bg-blue-500/10 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] left-[-10%] w-[450px] h-[450px] bg-emerald-500/5 dark:bg-emerald-500/10 rounded-full blur-[100px] pointer-events-none" />
+      {/* Healthcare Clinical Themed Background */}
+      <HealthcareBackground variant="doctor" />
 
       <div className="w-full max-w-5xl relative z-10 flex flex-col md:flex-row min-h-[600px]">
         {/* Left Side: Branding / Info */}
